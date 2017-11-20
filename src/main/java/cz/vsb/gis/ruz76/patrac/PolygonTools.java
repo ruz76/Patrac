@@ -3,6 +3,9 @@ package cz.vsb.gis.ruz76.patrac;
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.util.LineStringExtracter;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
+import org.geotools.data.collection.ListFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +16,15 @@ import java.util.List;
  * Based on https://gis.stackexchange.com/questions/189976/jts-split-arbitrary-polygon-by-a-line
  */
 public class PolygonTools {
+
+    public static Collection polygonize(SimpleFeatureCollection sfList) {
+        SimpleFeatureIterator sfListIterator = sfList.features();
+        Polygonizer polygonizer = new Polygonizer();
+        while (sfListIterator.hasNext()) {
+            polygonizer.add((Geometry) sfListIterator.next().getDefaultGeometry());
+        }
+        return polygonizer.getPolygons();
+    }
 
     public static Geometry polygonize(Geometry geometry) {
         List lines = LineStringExtracter.getLines(geometry);

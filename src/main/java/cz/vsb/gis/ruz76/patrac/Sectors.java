@@ -26,11 +26,11 @@ import java.util.List;
  * Created by jencek on 24.4.17.
  */
 public class Sectors {
-    private final String SECTORS_INPUT = "data/osm_landuse_combined_clean.shp";
-    private final String BARRIERS = "data/osm_roads_selected.shp";
-    private final String SECTORS_GROUPPED = "data/sectors_group.shp";
-    private final String SECTORS_SPLITTED = "data/sectors_split.shp";
-    private final String BARRIERS_FOR_SPLIT_LINES = "data/osm_lines.shp";
+    public String SECTORS_INPUT = "data/osm_landuse_combined_clean.shp";
+    public String BARRIERS = "data/osm_roads_selected.shp";
+    public String SECTORS_GROUPPED = "data/sectors_group.shp";
+    public String SECTORS_SPLITTED = "data/sectors_split.shp";
+    public String BARRIERS_FOR_SPLIT_LINES = "data/osm_lines.shp";
 
     public void splitSectors(double arealimit) throws Exception {
 
@@ -55,11 +55,11 @@ public class Sectors {
                 SimpleFeature feature = featureBuilder.buildFeature(null);
                 featuresForExport.add(feature);
             } else {
-               featureBuilder.add(p);
-               featureBuilder.add(sector.getAttribute("cat"));
-               featureBuilder.add(0);
-               SimpleFeature feature = featureBuilder.buildFeature(null);
-               featuresForExport.add(feature);
+                featureBuilder.add(p);
+                featureBuilder.add(sector.getAttribute("cat"));
+                featureBuilder.add(0);
+                SimpleFeature feature = featureBuilder.buildFeature(null);
+                featuresForExport.add(feature);
             }
         }
 
@@ -106,6 +106,9 @@ public class Sectors {
 
                 Geometry geomout = (Geometry) sector.getDefaultGeometry();
                 SimpleFeature sector_to_remove = null;
+                double sharedBorderLength = 0;
+                double polygonRoundness = 0;
+
                 //Loops sectors that surrounds processed sector
                 while (sectors_nei_sfi.hasNext()) {
                     SimpleFeature sector_nei = sectors_nei_sfi.next();
@@ -115,24 +118,29 @@ public class Sectors {
                     Geometry sector_nei_buffer = ((MultiPolygon) sector_nei.getDefaultGeometry()).buffer(distance);
                     Geometry buffer_intersection = sector_nei_buffer.intersection(sector_buffer);
 
-                    Filter filterbarriers = ff.intersects(ff.property("the_geom"), ff.literal(buffer_intersection));
-                    SimpleFeatureIterator barriers_sfi = barriers_fc.subCollection(filterbarriers).features();
-                    //System.out.println("barriers between surrounding sector and sector");
-                    //Loops barriers that are in intersections between two sectors
                     boolean isbarrier = false;
-                    while (barriers_sfi.hasNext()) {
-                        SimpleFeature barrier = barriers_sfi.next();
-                        Geometry barrier_intersection = buffer_intersection.intersection((Geometry) barrier.getDefaultGeometry());
-                        //If the perimeter of the intersection of sectors is up to 10 times bigger than barrier that is in intersection
-                        //then the barrier is probably along the whole intersection
-                        //difficult to determine limit, but 10 seems to be good
-                        //will do some tests on real data later
-                        if ((buffer_intersection.getLength() / barrier_intersection.getLength()) < 10) { //10 is Experimental
-                            System.out.println("Probably barrier along shared border between " + sector.getAttribute("cat") + " and " + sector_nei.getAttribute("cat"));
-                            isbarrier = true;
+                    for (int igeom = 0; igeom < buffer_intersection.getNumGeometries(); igeom++) {
+
+                        Filter filterbarriers = ff.intersects(ff.property("the_geom"), ff.literal(buffer_intersection.getGeometryN(igeom)));
+                        SimpleFeatureIterator barriers_sfi = barriers_fc.subCollection(filterbarriers).features();
+                        //System.out.println("barriers between surrounding sector and sector");
+                        //Loops barriers that are in intersections between two sectors
+
+                        while (barriers_sfi.hasNext()) {
+                            SimpleFeature barrier = barriers_sfi.next();
+                            Geometry barrier_intersection = buffer_intersection.intersection((Geometry) barrier.getDefaultGeometry());
+                            //If the perimeter of the intersection of sectors is up to 10 times bigger than barrier that is in intersection
+                            //then the barrier is probably along the whole intersection
+                            //difficult to determine limit, but 10 seems to be good
+                            //will do some tests on real data later
+                            if ((buffer_intersection.getLength() / barrier_intersection.getLength()) < 10) { //10 is Experimental
+                                System.out.println("Probably barrier along shared border between " + sector.getAttribute("cat") + " and " + sector_nei.getAttribute("cat"));
+                                isbarrier = true;
+                            }
+                            System.out.println("barrier id: " + barrier.getAttribute("ID") + " Length: " + barrier_intersection.getLength() + " From: " + buffer_intersection.getLength());
                         }
-                        System.out.println("barrier id: " + barrier.getAttribute("osm_id") + " Length: " + barrier_intersection.getLength() + " From: " + buffer_intersection.getLength());
                     }
+
                     if (!isbarrier) {
                         GeometryFactory factory = new GeometryFactory();
                         ArrayList c = new ArrayList();
@@ -140,12 +148,26 @@ public class Sectors {
                         c.add(sector.getDefaultGeometry());
                         GeometryCollection gc = (GeometryCollection) factory.buildGeometry(c);
                         Geometry union = gc.union();
+
                         if (arearange.getFit(union.getArea()) >= arearange.getFit(geomout.getArea())) {
-                            geomout = union;
-                            sector_to_remove = sector_nei;
+                            /*
+                            //Toto není dobře, raději podle délky společné hranice, ale možná jako druhý faktor
+                            double currentPolygonRoundness = (union.getArea() * Math.PI * 4) / Math.pow(union.getLength(), 2);
+                            if (currentPolygonRoundness > polygonRoundness) {
+                                polygonRoundness = currentPolygonRoundness;
+                                geomout = union;
+                                sector_to_remove = sector_nei;
+                            }*/
+                            double currentSharedBorderLength = ((MultiPolygon) sector_nei.getDefaultGeometry()).intersection((MultiPolygon) sector.getDefaultGeometry()).getLength();
+                            if (currentSharedBorderLength > sharedBorderLength) {
+                                sharedBorderLength = currentSharedBorderLength;
+                                geomout = union;
+                                sector_to_remove = sector_nei;
+                            }
                         }
                     }
                 }
+
                 if (sector_to_remove != null) {
                     sectors_fc_list.remove(sector);
                     sectors_fc_list.remove(sector_to_remove);
