@@ -1,4 +1,4 @@
-package cz.vsb.gis.ruz76.patrac;
+package cz.vsb.gis.ruz76.patrac.utils;
 
 import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.util.LineStringExtracter;

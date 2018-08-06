@@ -1,4 +1,4 @@
-package cz.vsb.gis.ruz76.patrac;
+package cz.vsb.gis.ruz76.patrac.utils;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -11,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * Created by jencek on 27.2.17.
+ * Class for function on radials (circles).
  */
 public class Radial {
     /* Function should divide circle to equal 360 sectors, each for one degree of circular sector.
@@ -19,7 +19,7 @@ public class Radial {
      * Try to run the code and open result sectors.csv in QGIS with EPSG:4326.
      * Correct the error.
      */
-    static void printSectors() {
+    public static void printSectors() {
         /*
         final double RADIUS = 15000;
         final double CENTER_X = 599490;
