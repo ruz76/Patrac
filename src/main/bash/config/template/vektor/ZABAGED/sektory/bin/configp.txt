@@ -1,0 +1,12 @@
+Example of path: data/input/simplify.shp or F:\Documents\VSB\DP\prace\data
+
+REGION_INPUT data/input/simplify.shp
+BARRIER_INPUT data/input/bariera/barieraTest361.shp
+SECTOR_OUTPUT data/output/vystup.shp
+BARRIER_OUTPUT data/input/bariery_edited.shp
+BUILT_UP_AREA_INPUT data/input/intravilan.txt
+POST_PROCESSING_OUTPUT data/output/postProcessing1000.shp
+MIN_AREA 10
+MAX_AREA 20
+COEF 0.75
+METHOD POST_PROCESSING

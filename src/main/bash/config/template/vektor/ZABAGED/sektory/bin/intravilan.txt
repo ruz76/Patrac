@@ -1,0 +1,34 @@
+AZAMEK;Areál zámku
+BUBLBU;Blok budov
+VANAZA;Budovy na nádraží
+CAMPIN;Camping
+CERPST;Čerpací stanice pohonných hmot
+CISTVO;Čistírna odpadních vod
+ZDSOZA;Další zdravotní a sociální zařízení
+DREVPR;Dřevozpracující a papírenský průmysl
+HRBITO;Hřbitov
+HRISTE;Hřiště
+KLASTE;Klášter
+KOUPAL;Koupaliště
+LETSCE;Letní scéna
+MUZEUM;Muzeum
+OSTPRU;Ostatní, nerozlišený průmysl
+AREZAS;Plocha u nádraží
+POTPRU;Potravinářský průmysl
+STAVHM;Průmysl skla, keramiky a staveb. hmot
+SADZAH;Sad, zahrada
+SKLHAN;Sklad, hangár
+SKLENI;Skleníkové pěstování plodin
+SKUPGA;Skupinové garáže
+SPORTA;Sportovní areál
+STRPRU;Strojírenský průmysl
+STRELN;Střelnice
+SKOLAA;Škola
+TECHSL;Technické služby
+UPRVOD;Úpravna vody
+USNAOD;Usazovací nádrž
+VEZENI;Věznice
+VODPLO;Vodní plochy
+VODZEM;Vodojem zemní
+ZAHPAR;Zahrady, parky
+ZEMARE;Zemědělský areál ostatní

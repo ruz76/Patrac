@@ -1,0 +1,107 @@
+Pozor, zdá se, že je chybně prj.
+
+CUZK_ZBGD_AREZAS_A_Clip.shp
+Nějaká plocha u nádraží.
+
+CUZK_ZBGD_ARUCZA_A_Clip.shp
+Plochy fabrik, nemocnic, apod.
+TYP_ZAST_K - typy - nutno rozlišit
+
+CUZK_ZBGD_BAZMOC_A_Clip.shp
+Bažiny, mokřady
+l.
+CUZK_ZBGD_BUBLBU_A_Clip.shp
+Bloky budov.
+
+CUZK_ZBGD_CHLVEZ_A_Clip.shp
+V území se nevyskytuje.
+
+CUZK_ZBGD_CHMELN_A_Clip.shp
+Chmelnice. V území se nevyskytuje.
+
+CUZK_ZBGD_ELEKTR_A_Clip.shp
+Elektrárna. V území pouze solární.
+
+CUZK_ZBGD_HALODV_A_Clip.shp
+Halda, odval. V území se nevyskytuje.
+
+CUZK_ZBGD_HRBITO_A_Clip.shp
+Hřbitov.
+
+CUZK_ZBGD_KOLEJI_A_Clip.shp
+Kolejiště. Výhybky.
+
+CUZK_ZBGD_KUSLFO_A_Clip.shp
+Skleníky, zemědělské budovy.
+
+CUZK_ZBGD_LETISTE_A_Clip.shp
+Letiště. V území se nevyskytuje.
+ 
+CUZK_ZBGD_LPKOSO_A_Clip.shp
+V území se nevyskytuje.
+
+CUZK_ZBGD_LPKROV_A_Clip.shp
+Louky, pastivny s křovinami.
+
+CUZK_ZBGD_LPSTROM_A_Clip.shp
+Louky, pastivny se stromy. Spíše to je les.
+
+CUZK_ZBGD_OBLEDR_A_Clip.shp
+Obvod letištní dráhy.
+
+CUZK_ZBGD_ODPOCI_A_Clip.shp
+Odpočívadla.
+
+CUZK_ZBGD_ORNAPU_A_Clip.shp
+Orná půda.
+
+CUZK_ZBGD_OSPLSI_A_Clip.shp
+Divné. Jsou v tom silnice, ale in plochy uvnitř areálů a dokonce i trávník.
+
+CUZK_ZBGD_POTELO_A_Clip.shp
+Povrchový důl.
+
+CUZK_ZBGD_PRSTPR_A_Clip.shp
+V území se nevyskytuje.
+
+CUZK_ZBGD_RASELI_A_Clip.shp
+Rašeliniště. V území se nevyskytuje, což je divné.
+
+CUZK_ZBGD_ROZTRA_A_Clip.shp
+V území se nevyskytuje.
+
+CUZK_ZBGD_ROZZRI_A_Clip.shp
+Nějaké budovy.
+
+CUZK_ZBGD_SADZAH_A_Clip.shp
+Sad, zahrada.
+
+CUZK_ZBGD_SESPUD_A_Clip.shp
+Sesuv půdy. V území se nevyskytuje.
+
+CUZK_ZBGD_SILO_A_Clip.shp
+Silo. 
+
+CUZK_ZBGD_SKAUTV_A_Clip.shp
+Asi stromová školka. Rozhodně oploceno.
+
+CUZK_ZBGD_SKLADK_A_Clip.shp
+Skládka.
+
+CUZK_ZBGD_TRTRPO_A_Clip.shp
+Travnatý provrch.
+
+CUZK_ZBGD_USNAOD_A_Clip.shp
+Usazovací nádrž.
+
+CUZK_ZBGD_VANAZA_A_Clip.shp
+Nějaké budovy na nádraží.
+
+CUZK_ZBGD_VINICE_A_Clip.shp
+Vinice. V území se nevyskytuje.
+
+CUZK_ZBGD_VODPLO_A_Clip.shp
+Vodní plochy.
+
+CUZK_ZBGD_ZAHPAR_A_Clip.shp
+Zahrady, parky. Zasahuje i do slinic.

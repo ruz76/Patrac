@@ -1,0 +1,5 @@
+CON_STRING="dbname=gdb user=user password=*** host=localhost port=5432 sslmode=require"
+CON_STRING_OGR="host=localhost user=user dbname=gdb password=***"
+BIN_DIR=/data/patracdata/postupy/2020
+KRAJE_DIR=/data/patracdata/kraje
+DEM_DIR=/data/patracdata/dem

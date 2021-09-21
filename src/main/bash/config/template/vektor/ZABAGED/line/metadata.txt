@@ -1,0 +1,146 @@
+CUZK_ZBGD_BREHOV_13_L_Clip.shp
+Břehová linie, asi z roku 2013.
+
+CUZK_ZBGD_BREHOV_L_Clip.shp
+Břehová linie. Otázka je z jakého roku.
+
+CUZK_ZBGD_BROD_L_Clip.shp
+Brod. Nemá asi smysl použít.
+
+CUZK_ZBGD_CESTA_L_Clip.shp
+Cesta.
+
+CUZK_ZBGD_DOLHRA_13_L_Clip.shp
+Hranice náspu u železnice.
+
+CUZK_ZBGD_DOPLIN_L_Clip.shp
+Nějaké hranice silnice, ale hodně řídké.
+
+CUZK_ZBGD_DOPPAS_L_Clip.shp
+Doprávní pás.
+
+CUZK_ZBGD_ELEVED_L_Clip.shp
+Elektrické vedení.
+
+CUZK_ZBGD_GEOJED_L_Clip.shp
+Netuším, buď nějaká geomorfologická jednotka nebo geologická jednotka.
+
+CUZK_ZBGD_HORHRA_13_L_Clip.shp
+Hranice nějakých stupňů.
+
+CUZK_ZBGD_HRAUZI_L_Clip.shp
+Hranice využití území. To vypadá dobře.
+
+CUZK_ZBGD_HRAVAL_L_Clip.shp
+Netuším.
+
+CUZK_ZBGD_LANVLE_L_Clip.shp
+Lanovka. V území se nevyskytuje, což je divné.
+
+CUZK_ZBGD_LAVKA_L_Clip.shp
+Lávky přes vodní tok.
+
+CUZK_ZBGD_LESPRU_L_Clip.shp
+Lední průsek.
+
+CUZK_ZBGD_LINVEG_L_Clip.shp
+Vegetace.
+
+CUZK_ZBGD_LYZMUS_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_METRO_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_MOST_L_Clip.shp
+Mostky.
+
+CUZK_ZBGD_OSLEDR_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_PESINA_L_Clip.shp
+Pěšina.
+
+CUZK_ZBGD_PLAKOM_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_PODJEZ_L_Clip.shp
+Podjezd.
+
+CUZK_ZBGD_POHRUZ_L_Clip.shp
+Nějaká pravidelná struktura. Umělá.
+
+CUZK_ZBGD_PRHRJE_L_Clip.shp
+Jez.
+
+CUZK_ZBGD_PRIVOZ_L_Clip.shp
+Přívoz. V území se nevyskytuje
+
+CUZK_ZBGD_PRODPOTR_L_Clip.shp
+Produktovod.
+
+CUZK_ZBGD_PROFIL_13_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_PROPUS_L_Clip.shp
+Propustek.
+
+CUZK_ZBGD_ROKVYM_L_Clip.shp
+Roklina.
+
+CUZK_ZBGD_ROZVOD_L_Clip.shp
+Rozvodí.
+
+CUZK_ZBGD_SILDAL_L_Clip.shp
+Silnice.
+
+CUZK_ZBGD_SILNEE_L_Clip.shp
+Silnice.
+
+CUZK_ZBGD_SILVYS_L_Clip.shp
+V území se nevyskytuje.
+
+CUZK_ZBGD_SKUBAL_L_Clip.shp
+Něco v lese.
+
+CUZK_ZBGD_SPRJEDKU_L_Clip.shp
+Správní hranice.
+
+CUZK_ZBGD_STUPEN_L_Clip.shp
+Nějaké terénní stupně na různých hranách.
+
+CUZK_ZBGD_TEREUT_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_TRADRA_L_Clip.shp
+V území se nevyskytuje
+
+CUZK_ZBGD_TUNEL_L_Clip.shp
+Tunel. V území se nevyskytuje
+
+CUZK_ZBGD_ULICE_L_Clip.shp
+Ulice.
+
+CUZK_ZBGD_VODOPA_L_Clip.shp
+Vodopád. V území se nevyskytuje
+
+CUZK_ZBGD_VODTOK_L_Clip.shp
+Vodní tok.
+
+CUZK_ZBGD_VRSDOP_13_L_Clip.shp
+Vrstevnice. DOplněk.
+
+CUZK_ZBGD_VRSZAP_13_L_Clip.shp
+Vrstevnice.
+
+CUZK_ZBGD_ZED_L_Clip.shp
+Zeď.
+
+CUZK_ZBGD_ZELPRE_L_Clip.shp
+Přejezd.
+
+CUZK_ZBGD_ZELTRA_L_Clip.shp
+Trať.
+
+CUZK_ZBGD_ZELVLE_L_Clip.shp
+Vlečka.
