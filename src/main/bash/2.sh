@@ -40,12 +40,10 @@ cp $BIN_DIR/config/template/vektor/ZABAGED/sektory/bin/* bin/
 echo "DROP SCHEMA IF EXISTS $KRAJ CASCADE;" > 1.sql
 echo "CREATE SCHEMA $KRAJ;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
-shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" landuse_barriers2_polygons.shp $KRAJ.landuse_barriers2_polygons > landuse_barriers2_polygons.sql
-psql "$CON_STRING" -f landuse_barriers2_polygons.sql
+ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" landuse_barriers2_polygons.shp -nln $KRAJ.landuse_barriers2_polygons -lco GEOMETRY_NAME=geom
 #rm landuse_barriers2_polygons.*
 
-shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" merged_polygons.shp $KRAJ.merged_polygons > merged_polygons.sql
-psql "$CON_STRING" -f merged_polygons.sql
+ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" merged_polygons.shp -nln $KRAJ.merged_polygons -lco GEOMETRY_NAME=geom
 #rm merged_polygons.*
 
 # Some bad geometries
@@ -53,18 +51,18 @@ echo "UPDATE $KRAJ.merged_polygons SET geom = ST_MakeValid(geom) WHERE NOT ST_Is
 psql "$CON_STRING" -f 1.sql
 
 cd ../line/
-shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" landuse_barriers.shp $KRAJ.landuse_barriers > landuse_barriers.sql
-psql "$CON_STRING" -f landuse_barriers.sql
+ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" landuse_barriers.shp -nln $KRAJ.landuse_barriers -lco GEOMETRY_NAME=geom
 #rm landuse_barriers.*
 
 cd ../area/
 # TODO do it directly in the database - no need to do via SHP
+cp $BIN_DIR/config/template/vektor/ZABAGED/area/* ./
 bash convert_continuous.sh $KRAJ
 bash merge.sh $KRAJ
 
 echo "ALTER TABLE $KRAJ.landuse_barriers2_polygons RENAME TO barriers_poly;" > 1.sql
-echo "ALTER TABLE $KRAJ.merged_polygons RENAME COLUMN gid TO id;" >> 1.sql
-echo "ALTER TABLE $KRAJ.barriers_poly RENAME COLUMN gid TO id;" >> 1.sql
+echo "ALTER TABLE $KRAJ.merged_polygons RENAME COLUMN fid TO id;" >> 1.sql
+echo "ALTER TABLE $KRAJ.barriers_poly RENAME COLUMN fid TO id;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
 cd ../sektory/
@@ -79,4 +77,4 @@ bash runTasks.sh
 bash merger_prepare.sh $KRAJ
 
 cd $BIN_DIR
-bash 3.sh $KRAJ $KRAJ_ID 
+#bash 3.sh $KRAJ $KRAJ_ID

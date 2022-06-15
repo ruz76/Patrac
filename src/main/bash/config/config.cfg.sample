@@ -1,0 +1,8 @@
+# The docker version form postgis/postgis does not have ssl installed
+CON_STRING="dbname=gdb user=postgres password=mysecretpassword host=localhost port=5432"
+CON_STRING_OGR="host=localhost user=postgres dbname=gdb password=mysecretpassword"
+BIN_DIR=/data/patracdata/postupy/2022
+KRAJE_DIR=/data/patracdata/kraje
+DEM_DIR=/data/patracdata/dem
+DUMP_DIR=/data/patracdata/dump
+ADM_DIR=/data/patracdata/adm

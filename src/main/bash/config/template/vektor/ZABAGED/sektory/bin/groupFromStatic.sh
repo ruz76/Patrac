@@ -11,9 +11,9 @@ for ((i=$1; i<=$2; i++)); do
     cp "../data/input/"$i"_"$type".dbf" data/input/simplify.dbf
 
     cp configg.txt config.txt
-    /usr/lib/jvm/java-8-oracle/bin/java -jar Patrac-1.0-SNAPSHOT-jar-with-dependencies.jar > /dev/null
+    java -jar Patrac-1.0-SNAPSHOT-jar-with-dependencies.jar > /dev/null
     cp configp.txt config.txt
-    /usr/lib/jvm/java-8-oracle/bin/java -jar Patrac-1.0-SNAPSHOT-jar-with-dependencies.jar > /dev/null
+    java -jar Patrac-1.0-SNAPSHOT-jar-with-dependencies.jar > /dev/null
     #/usr/lib/jvm/java-8-oracle/bin/java -jar Patrac-1.0-SNAPSHOT-jar-with-dependencies-evaluation.jar > "log/"$i"_"$type".eval"
 
     mv data/output/postProcessing1000.shp "data/output/"$i"_"$type".shp"

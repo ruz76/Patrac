@@ -67,50 +67,55 @@ mv merge.shx landuse_barriers2.shx
 mv merge.prj landuse_barriers2.prj
 mv merge.dbf landuse_barriers2.dbf
 
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_AKVSHY_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_BREHOV_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_BROD_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_CESTA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_DOPLIN_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_DOPPAS_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ELEVED_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_HRAUZI_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_HRAVAL_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_LANVLE_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_LAVKA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_LESPRU_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_LINVEG_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_LYZMUS_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_METRO_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_MOST_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_OSLEDR_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PESINA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PLAKOM_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PODJEZ_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PRHRJE_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PRIVOZ_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PRODPOTR_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_PROPUS_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ROKVYM_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_SILDAL_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_SILNEE_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_SILVYS_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_SKUBAL_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_STUPEN_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_TEREUT_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_TRADRA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_TUNEL_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ULICE_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_VODOPA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_VODTOK_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ZED_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ZELPRE_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ZELTRA_L_Clip.shp
-ogr2ogr -select ID -append merged.shp CUZK_ZBGD_ZELVLE_L_Clip.shp
+rm merged.*
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_AKVSHY_L_Clip" -append merged.shp CUZK_ZBGD_AKVSHY_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_BREHOV_L_Clip" -append merged.shp CUZK_ZBGD_BREHOV_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_BROD_L_Clip"  -append merged.shp CUZK_ZBGD_BROD_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_CESTA_L_Clip"  -append merged.shp CUZK_ZBGD_CESTA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_DOPLIN_L_Clip"  -append merged.shp CUZK_ZBGD_DOPLIN_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_DOPPAS_L_Clip"  -append merged.shp CUZK_ZBGD_DOPPAS_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ELEVED_L_Clip"  -append merged.shp CUZK_ZBGD_ELEVED_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_HRAUZI_L_Clip"  -append merged.shp CUZK_ZBGD_HRAUZI_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_HRAVAL_L_Clip"  -append merged.shp CUZK_ZBGD_HRAVAL_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_LANVLE_L_Clip"  -append merged.shp CUZK_ZBGD_LANVLE_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_LAVKA_L_Clip"  -append merged.shp CUZK_ZBGD_LAVKA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_LESPRU_L_Clip"  -append merged.shp CUZK_ZBGD_LESPRU_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_LINVEG_L_Clip"  -append merged.shp CUZK_ZBGD_LINVEG_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_LYZMUS_L_Clip"  -append merged.shp CUZK_ZBGD_LYZMUS_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_METRO_L_Clip"  -append merged.shp CUZK_ZBGD_METRO_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_MOST_L_Clip"  -append merged.shp CUZK_ZBGD_MOST_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_OSLEDR_L_Clip"  -append merged.shp CUZK_ZBGD_OSLEDR_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PESINA_L_Clip"  -append merged.shp CUZK_ZBGD_PESINA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PLAKOM_L_Clip"  -append merged.shp CUZK_ZBGD_PLAKOM_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PODJEZ_L_Clip"  -append merged.shp CUZK_ZBGD_PODJEZ_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PRHRJE_L_Clip"  -append merged.shp CUZK_ZBGD_PRHRJE_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PRIVOZ_L_Clip"  -append merged.shp CUZK_ZBGD_PRIVOZ_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PRODPOTR_L_Clip"  -append merged.shp CUZK_ZBGD_PRODPOTR_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_PROPUS_L_Clip"  -append merged.shp CUZK_ZBGD_PROPUS_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ROKVYM_L_Clip"  -append merged.shp CUZK_ZBGD_ROKVYM_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_SILDAL_L_Clip"  -append merged.shp CUZK_ZBGD_SILDAL_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_SILNEE_L_Clip"  -append merged.shp CUZK_ZBGD_SILNEE_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_SILVYS_L_Clip"  -append merged.shp CUZK_ZBGD_SILVYS_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_SKUBAL_L_Clip"  -append merged.shp CUZK_ZBGD_SKUBAL_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_STUPEN_L_Clip"  -append merged.shp CUZK_ZBGD_STUPEN_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_TEREUT_L_Clip"  -append merged.shp CUZK_ZBGD_TEREUT_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_TRADRA_L_Clip"  -append merged.shp CUZK_ZBGD_TRADRA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_TUNEL_L_Clip"  -append merged.shp CUZK_ZBGD_TUNEL_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ULICE_L_Clip"  -append merged.shp CUZK_ZBGD_ULICE_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_VODOPA_L_Clip"  -append merged.shp CUZK_ZBGD_VODOPA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_VODTOK_L_Clip"  -append merged.shp CUZK_ZBGD_VODTOK_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ZED_L_Clip"  -append merged.shp CUZK_ZBGD_ZED_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ZELPRE_L_Clip"  -append merged.shp CUZK_ZBGD_ZELPRE_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ZELTRA_L_Clip"  -append merged.shp CUZK_ZBGD_ZELTRA_L_Clip.shp
+ogr2ogr -sql "SELECT ID FROM CUZK_ZBGD_ZELVLE_L_Clip"  -append merged.shp CUZK_ZBGD_ZELVLE_L_Clip.shp
 
 zip merged.zip merged.*
 zip landuse_barriers2.zip landuse_barriers2.*
 mkdir ../sektory/
 
 # IMPORTANT
-echo "ArcGIS - Feature to Polygon or GRASS GIS build topology"
+# echo "ArcGIS - Feature to Polygon or GRASS GIS build topology"
+# QGIS is now better prepared. Try this.
+
+QT_QPA_PLATFORM=offscreen qgis_process run native:polygonize --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=$KRAJE_DIR/$KRAJ/vektor/ZABAGED/line/merged.shp --KEEP_FIELDS=false --OUTPUT=$KRAJE_DIR/$KRAJ/vektor/ZABAGED/sektory/merged_polygons.shp
+QT_QPA_PLATFORM=offscreen qgis_process run native:polygonize --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=$KRAJE_DIR/$KRAJ/vektor/ZABAGED/line/landuse_barriers2.shp --KEEP_FIELDS=false --OUTPUT=$KRAJE_DIR/$KRAJ/vektor/ZABAGED/sektory/landuse_barriers2_polygons.shp

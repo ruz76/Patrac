@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 
+# Imports dumps from PCR into database gdb into schema gdb and fix geometries
+su postgres
+createdb -O postgres gdb
+
 . config/config.cfg
 
-# Imports dumps from PCR into database gdb into schema gdb and fix geometries
-# TODO move to the directory of the dump files
+echo "CREATE EXTENSION postgis;" > create_db.sql
+echo "CREATE SCHEMA gdb;" >> create_db.sql
+psql "$CON_STRING" -f create_db.sql
 
-for i in $( ls *.dump ); do
+cd $DUMP_DIR
+
+for i in $( ls cuzk_zbgd*.dump ); do
   NAME=`echo $i | cut -d"." -f1`; 
   echo $NAME; 
   pg_restore -c -t $NAME -d gdb $i; 
@@ -15,4 +22,6 @@ for i in $( ls *.dump ); do
   psql "$CON_STRING" -f 1.sql
 done
 
+cd $ADM_DIR
+pg_restore -c -t nu3 -d gdb nu3.dump
 

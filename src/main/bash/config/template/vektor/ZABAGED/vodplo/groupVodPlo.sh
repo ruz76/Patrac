@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. config/config.cfg
+. /data/patracdata/postupy/2022/config/config.cfg
 
 #VODPLO
 
