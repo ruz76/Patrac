@@ -2,7 +2,7 @@ import psycopg2
 import sys
 from string import ascii_uppercase
 
-conn_string="dbname='gdb' port='5432' user='user' password='***' host='localhost'"
+conn_string="dbname='gdb' port='5432' user='postgres' password='mysecretpassword' host='localhost'"
 
 def get_extent(kraj):
     try:
@@ -41,6 +41,7 @@ def process_cell(kraj, cellid, minx, miny, maxx, maxy):
         conn = psycopg2.connect(conn_string)
         cursor = conn.cursor()
         query = "UPDATE " + kraj + ".merged_polygons_grouped p SET newid = CONCAT('" + cellid + "', s.overid) FROM (SELECT ROW_NUMBER() OVER(ORDER BY ST_XMin(geom), ST_YMin(geom)) overid, id FROM " + kraj +".merged_polygons_grouped WHERE ST_Within(geom, ST_MakeEnvelope(" + str(minx) + ", " + str(miny) + ", " + str(maxx) + ", " + str(maxy) + ", 5514)) OR ST_Intersects(geom, ST_MakeEnvelope(" + str(minx) + ", " + str(miny) + ", " + str(maxx) + ", " + str(maxy) + ", 5514))) s WHERE p.id = s.id;"
+        # print(query)
         cursor.execute(query)
         conn.commit()
         cursor.close()
@@ -54,11 +55,11 @@ def process_grid(kraj):
     miny = origminy
     maxx = minx + grid
     maxy = miny + grid
-    print (grid, minx, miny, maxx, maxy)
+    # print (grid, minx, miny, maxx, maxy)
     for i in ascii_uppercase:
         for j in ascii_uppercase:
             process_cell(kraj, i + "" + j, minx, miny, maxx, maxy)
-            print(grid, minx, miny, maxx, maxy)
+            # print(grid, minx, miny, maxx, maxy)
             minx = maxx
             maxx = minx + grid
         miny = maxy

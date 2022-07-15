@@ -24,4 +24,5 @@ done
 
 cd $ADM_DIR
 pg_restore -c -t nu3 -d gdb nu3.dump
+pg_restore -c -t dmr4g_index -d gdb dmr4g_index.dump
 

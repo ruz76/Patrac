@@ -33,16 +33,23 @@ CORES=8
 #DEM
 #Get list of dems
 #need to be executed outside of grass - some problem
+
 rm /tmp/dem.xyz
 bash get_dems.sh $2
-for i in $( cat /tmp/list.all ); do echo $i; cat $i >> /tmp/dem.xyz; done
+
+for i in $( cat /tmp/list.all ); do
+  echo $i;
+  gzip -d $i
+  cat $i >> /tmp/dem.xyz;
+  gzip $i
+done
 
 mkdir -p $KRAJE_DIR/$KRAJ/grassdata/jtsk/PERMANENT
 cp $BIN_DIR/config/template/grassdata/jtsk/PERMANENT/* $KRAJE_DIR/$KRAJ/grassdata/jtsk/PERMANENT/
 
-export GISBASE=/usr/lib/grass74
+export GISBASE=/usr/lib/grass78
  
-export GRASS_VERSION="7.4"
+export GRASS_VERSION="7.8"
  
 #generate GISRCRC
 MYGISDBASE=$KRAJE_DIR/$KRAJ/grassdata
@@ -162,13 +169,16 @@ v.in.ogr -o input=merged_polygons_groupped.shp output=merged_polygons_groupped s
 v.clean input=merged_polygons_groupped output=merged_polygons_groupped_clean tool=rmarea threshold=2500 --o
 v.out.ogr --overwrite input=merged_polygons_groupped_clean@PERMANENT output=merged_polygons_groupped.shp format=ESRI_Shapefile
 
-echo "ALTER TABLE $KRAJ.merged_polygons_grouped RENAME TO merged_polygons_grouped_full;" > 1.sql
+echo "DROP TABLE IF EXISTS $KRAJ.merged_polygons_grouped_full;" > 1.sql
+echo "ALTER TABLE $KRAJ.merged_polygons_grouped RENAME TO merged_polygons_grouped_full;" >> 1.sql
+echo "DROP INDEX $KRAJ.merged_polygons_grouped_geom_geom_idx;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
-shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" merged_polygons_groupped.shp $KRAJ.merged_polygons_grouped > merged_polygons_grouped.sql
-psql "$CON_STRING" -f merged_polygons_grouped.sql
+#shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" merged_polygons_groupped.shp $KRAJ.merged_polygons_grouped > merged_polygons_grouped.sql
+ogr2ogr -overwrite -f "PostgreSQL" -s_srs "EPSG:5514" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" merged_polygons_groupped.shp -nln $KRAJ.merged_polygons_grouped -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI
 
-echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column newid varchar(6);" > 1.sql
+echo "UPDATE $KRAJ.merged_polygons_grouped SET id = ogc_fid;" > 1.sql
+echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column newid varchar(6);" >> 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column areanewid varchar(6);" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
@@ -182,8 +192,8 @@ ogr2ogr -f "ESRI Shapefile" -a_srs "+proj=krovak +lat_0=49.5 +lon_0=24.833333333
 echo "COPY (SELECT id, ST_XMin(geom) - 10, ST_YMin(geom) - 10, ST_XMax(geom) + 10, ST_YMax(geom) + 10 FROM $KRAJ.merged_polygons_groupped ORDER BY id) TO '/tmp/merged_polygons_groupped.ids' DELIMITER ';' CSV;" > 1.sql
 psql "$CON_STRING" -f 1.sql
 
-cp /data/patracdata/postupy/2020/config/template/vektor/ZABAGED/line_x/* ./
-r.reclass input='landuse' output='landuse_type' rules='landuse_type_zbg.rules'
+cp $BIN_DIR/config/template/vektor/ZABAGED/line_x/* ./
+r.reclass input='landuse' output='landuse_type' rules='landuse_type_zbg.rules' --o
 
 while read p; do
   SECTOR_ID=`echo $p | cut -d";" -f1`
