@@ -16,10 +16,7 @@ You have to use maven and update pom.xml with current version of GeoTools librar
 ## Building GRASS GIS workspace
 You have to install GDAL and GRASS GIS
 
-Then the scripts are started in the order how they are named:
-* 0.sh
-* 1.sh
-* After 1.sh the manual polygon creation has to be done. This part was not automatized yet.
-* 2.sh
-* 3.sh
-* 4.sh
+Then the scripts are started with process.sh script.
+
+The Docker version of the script has been tested on KA region only. 
+Wait until the ST region is tested.
