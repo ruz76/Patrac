@@ -2,9 +2,6 @@
 
 . config/config.cfg
 
-# Creates basic input files for processing
-# TODO remove ArcMap from processing
-
 if [ "$#" -ne 2 ]; then
     echo "Illegal number of parameters"
     echo "Inputs "

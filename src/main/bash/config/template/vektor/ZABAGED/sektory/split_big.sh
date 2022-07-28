@@ -20,8 +20,8 @@ for i in $( find data/input/ -type f -size +1M | grep .shp ); do
   psql "$CON_STRING" -f big.sql
 
   ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" $NAME.shp -nln $KRAJ.big -lco GEOMETRY_NAME=geom
-#  shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" $NAME.shp $KRAJ.big > big.sql
-  psql "$CON_STRING" -f big.sql
+  #shp2pgsql -d -W "UTF-8" -I -s "EPSG:5514" $NAME.shp $KRAJ.big > big.sql
+  #psql "$CON_STRING" -f big.sql
   
   echo "DROP TABLE IF EXISTS $KRAJ.big_buffer;" > big.sql 
   echo "CREATE TABLE $KRAJ.big_buffer AS

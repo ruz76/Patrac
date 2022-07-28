@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# Imports dumps from PCR into database gdb into schema gdb and fix geometries
-su postgres
-createdb -O postgres gdb
-
 . config/config.cfg
+
+# Imports dumps from PCR into database gdb into schema gdb and fix geometries
+createdb -O postgres gdb
 
 echo "CREATE EXTENSION postgis;" > create_db.sql
 echo "CREATE SCHEMA gdb;" >> create_db.sql

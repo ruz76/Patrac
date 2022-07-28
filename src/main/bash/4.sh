@@ -47,6 +47,7 @@ done
 mkdir -p $KRAJE_DIR/$KRAJ/grassdata/jtsk/PERMANENT
 cp $BIN_DIR/config/template/grassdata/jtsk/PERMANENT/* $KRAJE_DIR/$KRAJ/grassdata/jtsk/PERMANENT/
 
+# Now we are entering GRASS
 export GISBASE=/usr/lib/grass78
  
 export GRASS_VERSION="7.8"
@@ -85,7 +86,7 @@ export PYTHONPATH="$GISBASE/etc/python:$PYTHONPATH"
 export MANPATH=$MANPATH:$GISBASE/man
 
 cd $KRAJE_DIR/$KRAJ/vektor/ZABAGED/all
-v.in.ogr -o input=buffer.shp output=buffer
+v.in.ogr -o input=buffer.shp output=buffer --o
 g.region vector=buffer
 g.region nsres=5 ewres=5
 
@@ -210,5 +211,14 @@ done </tmp/merged_polygons_groupped.ids
 
 r.mask -r
 
+# Insert stats into sqlite
+# TODO Refactor to do it in the step before
 for i in {A..Z};do echo $i; zip all_stats.zip $i*.stats; done
 for i in {A..Z};do echo $i; rm  $i*.stats; done
+rm -r /tmp/stats/
+mkdir /tmp/stats/
+cp all_stats.zip /tmp/stats/
+cd /tmp/stats/
+unzip -q all_stats.zip
+python3 $BIN_DIR/convert_stats.py
+cp /tmp/stats/stats.db $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/

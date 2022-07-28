@@ -7,8 +7,8 @@ if [ "$#" -ne 2 ]; then
     echo "Inputs "
     echo " - region code (varchar 2 letters) example vy"
     echo " - region code (varchar 2 letters and 5 numbers) example nu33107"
-    echo "example bash 4.sh ka nu33051"
-    echo "example bash 4.sh pl nu33042"
+    echo "example bash 2.sh ka nu33051"
+    echo "example bash 2.sh pl nu33042"
     echo "
           kh nu33085
           pa nu33093
@@ -75,6 +75,3 @@ bash split_big.sh $KRAJ
 bash tasks.sh $KRAJ
 bash runTasks.sh
 bash merger_prepare.sh $KRAJ
-
-cd $BIN_DIR
-#bash 3.sh $KRAJ $KRAJ_ID
