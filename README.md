@@ -20,3 +20,13 @@ Then the scripts are started with process.sh script.
 
 The Docker version of the script has been tested on KA region only. 
 Wait until the ST region is tested.
+
+The scripts expect exact structure of the data:
+
+* /data/patracdata - root directory
+* /data/patracdata/postupy/2022 - root directory with the scripts same as in the repository
+* /data/patracdata/kraje - root directory where kraj is stored
+* /data/patracdara/adm - dumps of nu3 regions and dmr4g_index
+* /data/patracdara/dmr_4g - dmr 4g files in directories - same structure as PCR exported
+* /data/patracdara/dump - PostGIS dump in the structure of PCR
+
