@@ -29,12 +29,17 @@ KRAJ_ID=$2
 
 cd $BIN_DIR
 su postgres -c 'bash 0.sh'
+
 cd $BIN_DIR
 bash 1.sh $KRAJ $KRAJ_ID
+
 cd $BIN_DIR
 bash 2.sh $KRAJ $KRAJ_ID
+
 cd $BIN_DIR
 bash 3.sh $KRAJ $KRAJ_ID
+
 cd $BIN_DIR
-# If there is a problem with owner of the grassdata, the process has to be run unde grass user
-bash 4.sh $KRAJ $KRAJ_ID
+echo $KRAJ > KRAJ.id
+echo $KRAJ_ID > KRAJ_ID.id
+su patrac -c 'bash 4.sh'

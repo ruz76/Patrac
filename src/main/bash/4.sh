@@ -27,7 +27,8 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-KRAJ=$1
+KRAJ=`cat KRAJ.id`
+KRAJ_ID=`cat KRAJ_ID.id`
 CORES=8
 
 #DEM
