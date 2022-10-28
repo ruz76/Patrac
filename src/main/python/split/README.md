@@ -51,3 +51,12 @@ Limits
 The Algorithm should be run several times until we reach required output with different limits. 
 All new sectors are smaller than 20 ha.
 
+Problems after first version:
+SQ74
+SQ56
+SQ28
+SQ233 - There are some borders in OSM - landuse/farmland from LPIS
+
+Perfect results:
+NY98
+NY22

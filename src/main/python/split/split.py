@@ -7,7 +7,7 @@ from shapely.affinity import scale
 from shapely.affinity import rotate
 from shapely.affinity import translate
 from shapely.geometry import LineString
-import json
+import json, sys
 
 def get_usable_geoms(layer, sektor_buffer):
     geoms_to_use = []
@@ -20,7 +20,7 @@ def get_usable_geoms(layer, sektor_buffer):
 def get_usable_geoms_on_geom(lines, sektor_buffer):
     geoms_to_use = []
     for line in lines:
-        if not line.intersection(sektor_buffer).length == line.length:
+        if not (line.intersection(sektor_buffer).length < 20 or line.intersection(sektor_buffer).length == line.length):
             geoms_to_use.append(line)
     return geoms_to_use
 
@@ -70,6 +70,7 @@ def write_to_geojson(geoms, shapes_dir, filename):
         id += 1
     collection = {
             "type": "FeatureCollection",
+            "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::5514"}},
             "features": features
         }
     with open(shapes_dir + filename, "w") as f:
@@ -81,7 +82,7 @@ def is_split_nice(splitted):
     for item in splitted:
         # print("SPLITTED ITEM AREA: " + str(item.area))
         # Bigger than 1 ha
-        if item.area > 50000:
+        if item.area > 40000:
             nice_items_count += 1
     if nice_items_count == len(splitted) and len(splitted) > 1:
         return True
@@ -201,6 +202,8 @@ def split_lines_by_sector_boundary(lines, sector_boundary):
 def get_lines_to_split_half_islands(sektor_geometry):
     lines_from_half_polygons = []
     sektor_buffer = sektor_geometry.buffer(-10)
+    if type(sektor_buffer) is not list:
+        return lines_from_half_polygons
     polygons = list(sektor_buffer)
     for polygon in polygons:
         polygon_back = polygon.buffer(11)
@@ -215,6 +218,7 @@ def get_lines_to_split_half_islands(sektor_geometry):
 def join_lines_recursively(lines_to_use, sectors):
     lines_before_join = lines_to_use.copy()
     # print(len(lines_before_join))
+    print("Lines before join: " + str(len(lines_before_join)))
     attempts = 0
     diffzero = 0
     while True:
@@ -226,6 +230,7 @@ def join_lines_recursively(lines_to_use, sectors):
             break
         else:
             lines_before_join = lines_after_join
+    print("Lines after join: " + str(len(lines_after_join)))
     for sector in sectors:
         lines_after_join = split_lines_by_sector_boundary(lines_after_join, sector.boundary)
     return lines_after_join
@@ -237,6 +242,7 @@ def split_by_single_longest_line(sectors, lines_after_join, longest_index):
         if sector.area > 200000:
             sektor_buffer = sector.exterior.buffer(50)
             lines_to_use = get_usable_geoms_on_geom(lines_after_join, sektor_buffer)
+            print("Lines for split: " + str(len(lines_to_use)))
             lines_to_use.sort(key=lambda x: get_length_inside_sector(x, sector), reverse=True)
             write_to_geojson(lines_to_use[0:1], shapes_dir, "lines_after_join_sorted_" + str(a) + "_0.json")
             a += 1
@@ -244,53 +250,61 @@ def split_by_single_longest_line(sectors, lines_after_join, longest_index):
             attempts = 0
             splitted = False
             while True:
-                outputs = split_by_simple_lines(sector, [lines_to_use[longest_index]], (attempts + 1) * 100)
                 attempts += 1
-                if len(outputs[0]) > 1:
-                    splitted = True
+                outputs = None
+                if (len(lines_to_use) > longest_index):
+                    outputs = split_by_simple_lines(sector, [lines_to_use[longest_index]], (attempts) * 100)
+                    if len(outputs[0]) > 1:
+                        splitted = True
                 if attempts > 10 or splitted:
-                    sectors_output += outputs[0]
+                    if outputs is not None:
+                        sectors_output += outputs[0]
+                    else:
+                        sectors_output.append(sector)
                     break
         else:
             sectors_output.append(sector)
     return sectors_output
 
-shapes_dir = '/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split/'
+try:
+    print("PROCESSING " + sys.argv[1])
 
-sektory = fiona.open(shapes_dir + 'sektor.shp', 'r', encoding='utf-8')
-cesty = fiona.open(shapes_dir + 'cesty.shp', 'r', encoding='utf-8')
-voda = fiona.open(shapes_dir + 'voda.shp', 'r', encoding='utf-8')
-osm_highway_track = fiona.open(shapes_dir + 'osm_highway_track.shp', 'r', encoding='utf-8')
+    shapes_dir = '/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_4/'
 
-lines_to_split_half_islands = get_lines_to_split_half_islands(shape(sektory[0]['geometry']))
+    sektory = fiona.open(shapes_dir + 'sektor.geojson', 'r', encoding='utf-8')
+    cesty = fiona.open(shapes_dir + 'cesta.shp', 'r', encoding='utf-8')
+    voda = fiona.open(shapes_dir + 'vodtok.shp', 'r', encoding='utf-8')
+    osm_highway_track = fiona.open(shapes_dir + 'osm_highway_track.shp', 'r', encoding='utf-8')
 
-# print(sektor['geometry']['type'])
-sektor_geometry = shape(shape(sektory[0]['geometry']))
-sektor_buffer = sektor_geometry.exterior.buffer(1)
-cesty_to_use = get_usable_geoms(cesty, sektor_buffer)
-toky_to_use = get_usable_geoms(voda, sektor_buffer)
-osm_highway_track_to_use = get_usable_geoms(osm_highway_track, sektor_buffer)
-lines_to_use = cesty_to_use + toky_to_use + lines_to_split_half_islands + osm_highway_track_to_use
-outputs = split_by_simple_lines(sektor_geometry, lines_to_use, 100)
-sectors = outputs[0]
-print("After first split: " + str(len(sectors)))
+    lines_to_split_half_islands = get_lines_to_split_half_islands(shape(sektory[0]['geometry']))
 
-# write_to_geojson(lines_to_use, shapes_dir, "lines_before_join.json")
-# lines_after_join = join_lines_recursively(lines_to_use, sectors)
-# write_to_geojson(lines_after_join, shapes_dir, "lines_after_join_second_use.json")
+    # print(sektor['geometry']['type'])
+    sektor_geometry = shape(shape(sektory[0]['geometry']))
+    sektor_buffer = sektor_geometry.exterior.buffer(1)
+    cesty_to_use = get_usable_geoms(cesty, sektor_buffer)
+    toky_to_use = get_usable_geoms(voda, sektor_buffer)
+    osm_highway_track_to_use = get_usable_geoms(osm_highway_track, sektor_buffer)
+    lines_to_use = cesty_to_use + toky_to_use + lines_to_split_half_islands + osm_highway_track_to_use
+    outputs = split_by_simple_lines(sektor_geometry, lines_to_use, 100)
+    sectors = outputs[0]
+    print("After first split: " + str(len(sectors)))
 
-for longest_index in range(4):
-    for attempt in range(10):
-        print("Lines before join: " + str(len(lines_to_use)))
-        lines_after_join = join_lines_recursively(lines_to_use, sectors)
-        print("Lines after join: " + str(len(lines_after_join)))
-        sectors = split_by_single_longest_line(sectors, lines_after_join, longest_index)
-        print("After " + str(attempt) + " split on index " + str(longest_index) + " : " + str(len(sectors)))
+    # write_to_geojson(lines_to_use, shapes_dir, "lines_before_join.json")
+    # lines_after_join = join_lines_recursively(lines_to_use, sectors)
+    # write_to_geojson(lines_after_join, shapes_dir, "lines_after_join_second_use.json")
 
-print("After last split: " + str(len(sectors)))
-write_to_geojson(sectors, shapes_dir, "sectors_after_split_by_single_lines_0.json")
+    for longest_index in range(4):
+        for attempt in range(5):
+            lines_after_join = join_lines_recursively(lines_to_use, sectors)
+            sectors = split_by_single_longest_line(sectors, lines_after_join, longest_index)
+            print("After " + str(attempt) + " split on index " + str(longest_index) + " : " + str(len(sectors)))
 
-# test_line = fiona.open(shapes_dir + 'test_line_full.shp', 'r', encoding='utf-8')
-# test_line_geometry = shape(shape(test_line[0]['geometry']))
-# splitted = split(sektor_geometry, test_line_geometry)
-# print(splitted)
+    print("After last split: " + str(len(sectors)))
+    write_to_geojson(sectors, shapes_dir, sys.argv[1] + ".json")
+
+    # test_line = fiona.open(shapes_dir + 'test_line_full.shp', 'r', encoding='utf-8')
+    # test_line_geometry = shape(shape(test_line[0]['geometry']))
+    # splitted = split(sektor_geometry, test_line_geometry)
+    # print(splitted)
+except:
+    print("ERROR in processing: " + sys.argv[1])
