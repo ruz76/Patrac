@@ -57,6 +57,82 @@ SQ56
 SQ28
 SQ233 - There are some borders in OSM - landuse/farmland from LPIS
 
+Problems after second version:
+DL17
+DL25
+DN70
+EL216
+FD174 - why the cable was not taken?
+FO18
+FR15 - why it did not take the path on west
+GM146
+GO57
+GP208 - why the two paths were not used in 59 area
+GP45
+GR2
+HF1
+HF61
+ID114
+ID133
+IE3
+IN181
+JD186
+JD78
+JF100 - why it does not take types in account
+KE82
+KF7
+KQ187
+
+Small problems:
+DM110
+DM18
+DN68
+FN27
+HR33
+HS104 - OSM
+IE110
+JE173 - why it does not take the path that is longer than water
+KN59 - why so strange shape
+
+20-25 ha:
+CD105
+CM53
+EB44
+
+20-25 ha, but fair:
+CL160
+CL190
+EO155
+FD46
+GO27
+
 Perfect results:
 NY98
 NY22
+DD46
+EM123
+FE30
+FL207
+FL161
+FN199
+GO71
+GP116
+IS110
+IS164
+JE113
+KM5 - Na Pološtině
+KN24
+KN27
+
+
+Nothing cutted:
+EB56
+EK215
+EQ228
+
+Shifted line:
+EE8
+FN45
+
+River:
+EH144

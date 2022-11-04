@@ -7,7 +7,7 @@ from shapely.affinity import scale
 from shapely.affinity import rotate
 from shapely.affinity import translate
 from shapely.geometry import LineString
-import json, sys
+import json, sys, os
 
 def get_usable_geoms(layer, sektor_buffer):
     geoms_to_use = []
@@ -272,19 +272,23 @@ try:
     shapes_dir = '/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_4/'
 
     sektory = fiona.open(shapes_dir + 'sektor.geojson', 'r', encoding='utf-8')
-    cesty = fiona.open(shapes_dir + 'cesta.shp', 'r', encoding='utf-8')
-    voda = fiona.open(shapes_dir + 'vodtok.shp', 'r', encoding='utf-8')
-    osm_highway_track = fiona.open(shapes_dir + 'osm_highway_track.shp', 'r', encoding='utf-8')
+    sektor_geometry = shape(shape(sektory[0]['geometry']))
+    sektor_buffer = sektor_geometry.exterior.buffer(1)
 
     lines_to_split_half_islands = get_lines_to_split_half_islands(shape(sektory[0]['geometry']))
 
-    # print(sektor['geometry']['type'])
-    sektor_geometry = shape(shape(sektory[0]['geometry']))
-    sektor_buffer = sektor_geometry.exterior.buffer(1)
-    cesty_to_use = get_usable_geoms(cesty, sektor_buffer)
-    toky_to_use = get_usable_geoms(voda, sektor_buffer)
+    osm_highway_track = fiona.open(shapes_dir + 'osm_highway_track.shp', 'r', encoding='utf-8')
     osm_highway_track_to_use = get_usable_geoms(osm_highway_track, sektor_buffer)
-    lines_to_use = cesty_to_use + toky_to_use + lines_to_split_half_islands + osm_highway_track_to_use
+    lines_to_use = osm_highway_track_to_use + lines_to_split_half_islands
+
+    with open("zpm.txt") as f:
+        layers = f.readlines()
+        for layer in layers:
+            if os.path.exists(shapes_dir + layer.strip().lower() + '.shp'):
+                layer_zpm = fiona.open(shapes_dir + layer.strip().lower() + '.shp', 'r', encoding='utf-8')
+                layer_zpm_to_use = get_usable_geoms(layer_zpm, sektor_buffer)
+                lines_to_use += layer_zpm_to_use
+
     outputs = split_by_simple_lines(sektor_geometry, lines_to_use, 100)
     sectors = outputs[0]
     print("After first split: " + str(len(sectors)))

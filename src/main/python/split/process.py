@@ -23,18 +23,18 @@ for sector in sektory:
     geom = shape(sector['geometry'])
     # Bigger than 20 ha (1 ha = 10_000 square meters)
     if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV':
-        print(sector)
+        # print(sector)
         count_big += 1
-        print(geom.bounds[0])
-        print(mapping(geom.envelope))
-        save_feature(working_dir + "/cregion.geojson", mapping(geom.envelope))
-        save_feature(working_dir + "/sektor.geojson", mapping(geom))
-        with open("process.sh", "w") as output:
-            output.write("bash export_vectors_zpm.sh " + data_dir + " " + str(geom.bounds[0]) + " " + str(geom.bounds[1]) + " " + str(geom.bounds[2]) + " " + str(geom.bounds[3]) + " " + working_dir + "\n")
-            output.write("bash export_vectors_osm.sh " + str(geom.bounds[0]) + " " + str(geom.bounds[1]) + " " + str(geom.bounds[2]) + " " + str(geom.bounds[3]) + " " + working_dir + "\n")
-            output.write("python3 split.py " + str(sector['properties']['id']) + "\n")
-        subprocess.check_call("bash /home/jencek/Documents/Projekty/PCR/github/Patrac/src/main/python/split/process.sh", shell=True)
-        print("DONE " + str(sector['properties']['id']))
+        # print(geom.bounds[0])
+        # print(mapping(geom.envelope))
+        # save_feature(working_dir + "/cregion.geojson", mapping(geom.envelope))
+        # save_feature(working_dir + "/sektor.geojson", mapping(geom))
+        # with open("process.sh", "w") as output:
+        #     output.write("bash export_vectors_zpm.sh " + data_dir + " " + str(geom.bounds[0]) + " " + str(geom.bounds[1]) + " " + str(geom.bounds[2]) + " " + str(geom.bounds[3]) + " " + working_dir + "\n")
+        #     output.write("bash export_vectors_osm.sh " + str(geom.bounds[0]) + " " + str(geom.bounds[1]) + " " + str(geom.bounds[2]) + " " + str(geom.bounds[3]) + " " + working_dir + "\n")
+        #     output.write("python3 split.py " + str(sector['properties']['id']) + "\n")
+        # subprocess.check_call("bash /home/jencek/Documents/Projekty/PCR/github/Patrac/src/main/python/split/process.sh", shell=True)
+        # print("DONE " + str(sector['properties']['id']))
     count_all += 1
 
 print("Total: " + str(count_all) + " Big: " + str(count_big))

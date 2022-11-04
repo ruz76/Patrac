@@ -45,11 +45,17 @@ DATAOUTPUTPATH=$6
 r.mask -r
 g.region e=$XMAX w=$XMIN n=$YMAX s=$YMIN
 v.in.ogr -o input=$DATAOUTPUTPATH/cregion.geojson output=cregion --o
-v.select ainput=VODTOK binput=cregion output=VODTOK_cregion --o
-v.out.ogr format=ESRI_Shapefile input=VODTOK_cregion output=$DATAOUTPUTPATH/vodtok.shp --o
-v.select ainput=CESTA binput=cregion output=CESTA_cregion --o
-v.out.ogr format=ESRI_Shapefile input=CESTA_cregion output=$DATAOUTPUTPATH/cesta.shp --o
-v.select ainput=LESPRU binput=cregion output=LESPRU_cregion --o
-v.out.ogr format=ESRI_Shapefile input=LESPRU_cregion output=$DATAOUTPUTPATH/lespru.shp --o
 
-#export_current('LESPRU')
+export_layer() {
+  v.select ainput=$1 binput=cregion output=$1_cregion --o
+  v.out.ogr format=ESRI_Shapefile input=$1_cregion output=$DATAOUTPUTPATH/$2.shp --o
+}
+
+for layer in $( cat zpm.txt ); do
+  OUTPUTNAME=`echo "$layer" | tr '[:upper:]' '[:lower:]'`
+  rm $DATAOUTPUTPATH/$OUTPUTNAME.shp
+  rm $DATAOUTPUTPATH/$OUTPUTNAME.shx
+  rm $DATAOUTPUTPATH/$OUTPUTNAME.dbf
+  rm $DATAOUTPUTPATH/$OUTPUTNAME.prj
+  export_layer $layer $OUTPUTNAME
+done
