@@ -5,3 +5,6 @@ docker exec -ti patrac-postgis /bin/bash
 
 #docker exec -e uid=$(id -u) -e gid=$(id -g) -ti patrac-postgis /bin/bash
 #docker run --name patrac-postgis -e uid=$(id -u) -e gid=$(id -g) -v /media/jencek/Elements1/gisak:/data -e POSTGRES_PASSWORD=mysecretpassword -d ruz76-patrac-stor
+
+# clean volumes
+docker volume prune
