@@ -8,6 +8,7 @@ from shapely.affinity import rotate
 from shapely.affinity import translate
 from shapely.geometry import LineString
 import json, sys, os
+import numpy as np
 
 def get_usable_geoms(layer, sektor_buffer):
     geoms_to_use = []
@@ -24,7 +25,33 @@ def get_usable_geoms_on_geom(lines, sektor_buffer):
             geoms_to_use.append(line)
     return geoms_to_use
 
-def join_lines(lines):
+def azimuth(point1, point2):
+    '''azimuth between 2 shapely points (interval 0 - 360)'''
+    angle = np.arctan2(point2[0] - point1[0], point2[1]- point1[1])
+    return np.degrees(angle) if angle >= 0 else np.degrees(angle) + 360
+
+def get_angle_diff(segment1, segment2):
+    angle1 = azimuth(segment1.coords[0], segment1.coords[1])
+    angle2 = azimuth(segment2.coords[0], segment2.coords[1])
+    # print(np.abs(angle2 - angle1))
+    return np.abs(angle2 - angle1)
+
+def get_lines_angle(line1, line2):
+    first_segment_line1 = LineString(line1.coords[:2])
+    last_segment_line1 = LineString(line1.coords[-2:])
+    first_segment_line2 = LineString(line2.coords[:2])
+    last_segment_line2 = LineString(line2.coords[-2:])
+    if first_segment_line1.touches(first_segment_line2):
+        return get_angle_diff(first_segment_line1, first_segment_line2)
+    if first_segment_line1.touches(last_segment_line2):
+        return get_angle_diff(first_segment_line1, last_segment_line2)
+    if last_segment_line1.touches(first_segment_line2):
+        return get_angle_diff(last_segment_line1, first_segment_line2)
+    if last_segment_line1.touches(last_segment_line2):
+        return get_angle_diff(last_segment_line1, last_segment_line2)
+    return 0
+
+def join_lines(lines, anglelimit):
     # print("Before join: " + str(len(lines)))
     lines_modified = []
     lines_merged_ids = []
@@ -32,7 +59,7 @@ def join_lines(lines):
     for line in lines:
         line2id = 0
         for line2 in lines:
-            if line1id != line2id and line.touches(line2) and line2id not in lines_merged_ids:
+            if line1id != line2id and line.touches(line2) and get_lines_angle(line, line2) < anglelimit and line2id not in lines_merged_ids:
                 try:
                     merged_lines = linemerge([line, line2])
                     if merged_lines.geom_type == 'LineString':
@@ -121,23 +148,33 @@ def scale_lines(lines, extend_size):
         factor_last = 1 + (extend_size / last_segment.length)
         scaled_last_segment = scale(last_segment, xfact=factor_last, yfact=factor_last, origin=last_segment.boundary[0])
         scaled_first_segment = scale(first_segment, xfact=factor_first, yfact=factor_first, origin=first_segment.boundary[1])
-        scaled_last_segment = rotate(scaled_last_segment, 5, origin=last_segment.boundary[0])
-        scaled_first_segment = rotate(scaled_first_segment, 5, origin=first_segment.boundary[1])
         new_line = LineString([*scaled_first_segment.coords, *line.coords[2:-2], *scaled_last_segment.coords])
-        scaled_lines.append(new_line)
-        new_line = translate(new_line, 10, 0, 0)
-        scaled_lines.append(new_line)
-        new_line = translate(new_line, -10, 0, 0)
-        scaled_lines.append(new_line)
-        scaled_last_segment = rotate(scaled_last_segment, -10, origin=last_segment.boundary[0])
-        scaled_first_segment = rotate(scaled_first_segment, -10, origin=first_segment.boundary[1])
-        new_line = LineString([*scaled_first_segment.coords, *line.coords[2:-2], *scaled_last_segment.coords])
-        scaled_lines.append(new_line)
-        new_line = translate(new_line, 0, 10, 0)
-        scaled_lines.append(new_line)
-        new_line = translate(new_line, 0, -10, 0)
         scaled_lines.append(new_line)
     return scaled_lines
+
+def translate_lines(lines):
+    translated = []
+    for line in lines:
+        new_line = translate(line, 0, 10, 0)
+        translated.append(new_line)
+        new_line = translate(line, 0, -10, 0)
+        translated.append(new_line)
+    return translated
+
+def rotate_lines(lines, rotation, extend_size):
+    rotated = []
+    for line in lines:
+        first_segment = LineString(line.coords[:2])
+        factor_first = 1 + (extend_size / first_segment.length)
+        last_segment = LineString(line.coords[-2:])
+        factor_last = 1 + (extend_size / last_segment.length)
+        scaled_last_segment = scale(last_segment, xfact=factor_last, yfact=factor_last, origin=last_segment.boundary[0])
+        scaled_first_segment = scale(first_segment, xfact=factor_first, yfact=factor_first, origin=first_segment.boundary[1])
+        scaled_last_segment = rotate(scaled_last_segment, rotation, origin=last_segment.boundary[0])
+        scaled_first_segment = rotate(scaled_first_segment, rotation, origin=first_segment.boundary[1])
+        new_line = LineString([*scaled_first_segment.coords, *line.coords[2:-2], *scaled_last_segment.coords])
+        rotated.append(new_line)
+    return rotated
 
 def get_length_inside_sector(line, sector):
     intersection = sector.intersection(line)
@@ -150,7 +187,7 @@ def split_by_simple_lines(sector_to_split, lines_to_use, extend_size):
     attempts = 0
     diffzero = 0
     while True:
-        lines_after_join = join_lines(lines_before_join)
+        lines_after_join = join_lines(lines_before_join, attempts + 1)
         attempts += 1
         if len(lines_before_join) == len(lines_before_join):
             diffzero += 1
@@ -158,7 +195,8 @@ def split_by_simple_lines(sector_to_split, lines_to_use, extend_size):
             break
         else:
             lines_before_join = lines_after_join
-    extended_lines = extend_by_moved_lines(lines_after_join)
+    extended_lines = lines_after_join
+    # extended_lines = extend_by_moved_lines(lines_after_join)
     lines_after_split_by_sektor_boundary = split_lines_by_sector_boundary(extended_lines, sector_to_split.boundary)
     # print(len(lines_after_join))
     write_to_geojson(lines_after_split_by_sektor_boundary, shapes_dir, "lines_after_join.json")
@@ -172,7 +210,7 @@ def split_by_simple_lines(sector_to_split, lines_to_use, extend_size):
         sectors = split_sektor_by_lines(sectors, scaled_lines)
         write_to_geojson(sectors, shapes_dir, "sectors_after_split" + str(a) + ".json")
 
-    return [sectors, lines_after_split_by_sektor_boundary]
+    return sectors
 
 def extend_by_moved_lines(lines):
     output_lines = []
@@ -222,7 +260,7 @@ def join_lines_recursively(lines_to_use, sectors):
     attempts = 0
     diffzero = 0
     while True:
-        lines_after_join = join_lines(lines_before_join)
+        lines_after_join = join_lines(lines_before_join, attempts + 1)
         attempts += 1
         if len(lines_before_join) == len(lines_before_join):
             diffzero += 1
@@ -235,7 +273,7 @@ def join_lines_recursively(lines_to_use, sectors):
         lines_after_join = split_lines_by_sector_boundary(lines_after_join, sector.boundary)
     return lines_after_join
 
-def split_by_single_longest_line(sectors, lines_after_join, longest_index):
+def split_by_single_longest_line(sectors, lines_after_join, longest_index, extend_limit):
     a = 0
     sectors_output = []
     for sector in sectors:
@@ -253,12 +291,12 @@ def split_by_single_longest_line(sectors, lines_after_join, longest_index):
                 attempts += 1
                 outputs = None
                 if (len(lines_to_use) > longest_index):
-                    outputs = split_by_simple_lines(sector, [lines_to_use[longest_index]], (attempts) * 100)
-                    if len(outputs[0]) > 1:
+                    output = split_by_simple_lines(sector, [lines_to_use[longest_index]], (attempts) * extend_limit)
+                    if len(output) > 1:
                         splitted = True
-                if attempts > 10 or splitted:
+                if attempts > 1 or splitted:
                     if outputs is not None:
-                        sectors_output += outputs[0]
+                        sectors_output += output
                     else:
                         sectors_output.append(sector)
                     break
@@ -268,8 +306,11 @@ def split_by_single_longest_line(sectors, lines_after_join, longest_index):
 
 try:
     print("PROCESSING " + sys.argv[1])
+    extend_limit = 100
+    if sys.argv[2] in ["LPSTROM", "LPKROV"]:
+        extend_limit = 50
 
-    shapes_dir = '/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_4/'
+    shapes_dir = '/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_5/'
 
     sektory = fiona.open(shapes_dir + 'sektor.geojson', 'r', encoding='utf-8')
     sektor_geometry = shape(shape(sektory[0]['geometry']))
@@ -289,8 +330,7 @@ try:
                 layer_zpm_to_use = get_usable_geoms(layer_zpm, sektor_buffer)
                 lines_to_use += layer_zpm_to_use
 
-    outputs = split_by_simple_lines(sektor_geometry, lines_to_use, 100)
-    sectors = outputs[0]
+    sectors = split_by_simple_lines(sektor_geometry, lines_to_use, extend_limit)
     print("After first split: " + str(len(sectors)))
 
     # write_to_geojson(lines_to_use, shapes_dir, "lines_before_join.json")
@@ -298,10 +338,19 @@ try:
     # write_to_geojson(lines_after_join, shapes_dir, "lines_after_join_second_use.json")
 
     for longest_index in range(4):
-        for attempt in range(5):
+        for attempt in range(1):
             lines_after_join = join_lines_recursively(lines_to_use, sectors)
-            sectors = split_by_single_longest_line(sectors, lines_after_join, longest_index)
+            sectors = split_by_single_longest_line(sectors, lines_after_join, longest_index, extend_limit)
             print("After " + str(attempt) + " split on index " + str(longest_index) + " : " + str(len(sectors)))
+
+    for longest_index in range(4):
+        for attempt in range(1):
+            lines_after_join = join_lines_recursively(lines_to_use, sectors)
+            rotated_1 = rotate_lines(lines_after_join, 5, 10)
+            sectors = split_by_single_longest_line(sectors, rotated_1, longest_index, extend_limit)
+            rotated_2 = rotate_lines(lines_after_join, 90, 10)
+            sectors = split_by_single_longest_line(sectors, rotated_2, longest_index, extend_limit)
+            print("After " + str(attempt) + " split by rotated on index " + str(longest_index) + " : " + str(len(sectors)))
 
     print("After last split: " + str(len(sectors)))
     write_to_geojson(sectors, shapes_dir, sys.argv[1] + ".json")
@@ -310,5 +359,6 @@ try:
     # test_line_geometry = shape(shape(test_line[0]['geometry']))
     # splitted = split(sektor_geometry, test_line_geometry)
     # print(splitted)
-except:
+except Exception as e:
     print("ERROR in processing: " + sys.argv[1])
+    print(e)

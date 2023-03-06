@@ -1,3 +1,64 @@
+# New apprcoah from 2023-03-02
+
+Do not split plygons. But do same as for building them but with lines extended by 50 m.
+
+```bash
+qgis_process run native:polygonstolines --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=sektor.shp --OUTPUT=sector_line.shp
+mkdir s
+mv sektor.* s/
+rm *.prj
+ogrmerge.py -single -o merged.shp *.shp
+qgis_process run native:extendlines --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=merged.shp --START_DISTANCE=50 --END_DISTANCE=50 --OUTPUT=extended.shp
+qgis_process run native:polygonize --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=extended.shp --KEEP_FIELDS=false --OUTPUT=polygons.shp
+qgis_process run native:clip --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=polygons.shp --OVERLAY=s/sektor.shp --OUTPUT=clipped.shp
+qgis_process run grass7:v.clean --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --input=clipped.shp --type=0 --type=1 --type=2 --type=3 --type=4 --type=5 --type=6 --tool=10 --threshold=40000 ---b=false ---c=false --output=clipped_cleaned.shp --error=TEMPORARY_OUTPUT --GRASS_SNAP_TOLERANCE_PARAMETER=-1 --GRASS_MIN_AREA_PARAMETER=0.0001 --GRASS_OUTPUT_TYPE_PARAMETER=0 --GRASS_VECTOR_DSCO= --GRASS_VECTOR_LCO= --GRASS_VECTOR_EXPORT_NOCAT=false
+```
+
+## maybe enhancement
+AH19, BM1, CJ46, DE51, DF174, DN70, EO152, FN127 - close distance
+AK3, CE92, CL31 - priority - more rounds
+BI137
+CO108
+DE132, EM123 - rotation
+
+## Problems
+BG122
+BH3
+BI6
+BI69
+CK119 - not existing in ZPM
+CM13
+DB6
+DF84
+DG214
+DK127
+DK51
+DL5
+DM110
+EH144 - no geometry
+EN151
+EN209
+EN86
+EQ128
+EQ183
+EQ210
+ER7 - divné
+FA1
+FI30
+FK107
+FL1
+FL36
+
+CM53
+DD46
+DM110 - a co ten průsek?
+DN70
+EH144 - divné
+EM123 - možná loehce zarotovat - ale jak to bude pátrač vědět - nebude - u Pole by to mohlo být
+JD78
+
+
+# Deprecated
 First ideas how to solve the split problem. 
 Some of the sectors are too big to be directly used for search.
 We should try to split them. 
@@ -136,3 +197,16 @@ FN45
 
 River:
 EH144
+
+Problems after third version:
+FL207 - should be splitted - need to find joins to another lines
+CL190
+DM110
+DN70
+EM123
+GP45
+HR33
+HS104
+IS110
+KE82
+NY98
