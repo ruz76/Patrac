@@ -182,6 +182,10 @@ ogr2ogr -overwrite -f "PostgreSQL" -s_srs "EPSG:5514" -t_srs "EPSG:5514" PG:"$CO
 echo "UPDATE $KRAJ.merged_polygons_grouped SET id = ogc_fid;" > 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column newid varchar(6);" >> 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column areanewid varchar(6);" >> 1.sql
+echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column cen geometry(POINT,5514);" >> 1.sql
+echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column cen geometry(POINT,5514);" >> 1.sql
+echo "UPDATE TABLE $KRAJ.merged_polygons_grouped SET cen = ST_Centroid(geom);" >> 1.sql
+echo "CREATE INDEX ON $KRAJ.merged_polygons_grouped USING GIST(cen);" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
 python3 $BIN_DIR/sector_names.py $KRAJ
@@ -197,6 +201,13 @@ psql "$CON_STRING" -f 1.sql
 cp $BIN_DIR/config/template/vektor/ZABAGED/line_x/* ./
 r.reclass input='landuse' output='landuse_type' rules='landuse_type_zbg.rules' --o
 
+# Insert stats into sqlite
+rm -r /tmp/stats/
+mkdir /tmp/stats
+cd /tmp/stats
+cp $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/merged_polygons_groupped.* ./
+python3 $BIN_DIR/insert_stats.py create
+
 while read p; do
   SECTOR_ID=`echo $p | cut -d";" -f1`
   MINX=`echo $p | cut -d";" -f2`
@@ -207,19 +218,10 @@ while read p; do
   ogr2ogr -where "id='$SECTOR_ID'" sector.shp merged_polygons_groupped.shp -overwrite
   v.in.ogr -o input=sector.shp output=sector --o --quiet
   r.mask vector=sector --o --quiet
-  r.stats -plna landuse_type separator=pipe > $SECTOR_ID.stats  
+  r.stats -plna landuse_type separator=pipe > sector.stats
+  python3 $BIN_DIR/insert_stats.py insert $SECTOR_ID
 done </tmp/merged_polygons_groupped.ids
 
 r.mask -r
 
-# Insert stats into sqlite
-# TODO Refactor to do it in the step before
-for i in {A..Z};do echo $i; zip all_stats.zip $i*.stats; done
-for i in {A..Z};do echo $i; rm  $i*.stats; done
-rm -r /tmp/stats/
-mkdir /tmp/stats/
-cp all_stats.zip /tmp/stats/
-cd /tmp/stats/
-unzip -q all_stats.zip
-python3 $BIN_DIR/convert_stats.py
-cp /tmp/stats/stats.db $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/
+mv /tmp/stats/stats.db $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/
