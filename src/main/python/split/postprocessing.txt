@@ -1,0 +1,34 @@
+# Not finished
+
+for i in {0..3}; do
+  ogrmerge.py -single -o /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/round"$i"_merged.shp /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/1/outputs/round$i.shp /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/2/outputs/round$i.shp /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/3/outputs/round$i.shp /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/4/outputs/round$i.shp
+done
+
+## Import merged into postgis
+
+CON_STRING_OGR="host=localhost user=patrac dbname=patrac password=patrac"
+for i in {0..3}; do
+  ogr2ogr -overwrite -f "PostgreSQL" -a_srs "EPSG:5514" PG:"$CON_STRING_OGR" /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/split/round"$i"_merged.shp -nln split_round_"$i" -lco GEOMETRY_NAME=geom
+done
+
+
+DELETE FROM split_round_0 WHERE id IN (SELECT id FROM split_round_1);
+insert into split_round_0 (id, typ, geom) select id, typ, geom from split_round_1;
+
+DELETE FROM split_round_0 WHERE id IN (SELECT id FROM split_round_2);
+insert into split_round_0 (id, typ, geom) select id, typ, geom from split_round_2;
+
+DELETE FROM split_round_0 WHERE id IN (SELECT id FROM split_round_3);
+insert into split_round_0 (id, typ, geom) select id, typ, geom from split_round_3;
+
+create table sectors_zl_split as select * from sectors_zl;
+DELETE FROM sectors_zl_split WHERE id IN (SELECT id FROM split_round_0);
+insert into sectors_zl_split (id, typ, geom) select id, typ, st_multi(geom) from split_round_0;
+ogr2ogr -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_splitted.shp PG:"$CON_STRING_OGR" "public.sectors_zl_split" -overwrite
+
+## In a case of duplicities
+drop table sectors_zl_split;
+create table sectors_zl_split as select * from sectors_zl;
+create table split_round_0_grouped as select id, max(typ), st_union(geom) geom from split_round_0 group by id;
+DELETE FROM sectors_zl_split t1 USING split_round_0_grouped t2 WHERE t1.id = t2.id and st_distance(st_centroid(t1.geom), st_centroid(t2.geom)) < 50;
+insert into sectors_zl_split (id, typ, geom) select id, typ, st_multi(geom) from split_round_0;
