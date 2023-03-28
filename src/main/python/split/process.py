@@ -2,7 +2,7 @@ import fiona
 import json
 from shapely.geometry import shape
 from shapely.geometry import mapping
-import subprocess, os
+import subprocess, os, sys
 
 def save_feature(path, geom_json):
     features = {
@@ -13,40 +13,72 @@ def save_feature(path, geom_json):
     with open(path, "w") as output:
         json.dump(features, output)
 
-working_dir='/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_9'
-data_dir = '/data/patracdata/kraje/zl'
+def process_sector(geom, sector, full_extend, lines_name, output_name):
+    extended_geom = geom.buffer(50)
+    save_feature(working_dir + "/cregion.geojson", mapping(extended_geom.envelope))
+    save_feature(working_dir + "/sektor.geojson", mapping(geom))
+    with open(working_dir + "/process.sh", "w") as output:
+        output.write("cp sector.qml " + working_dir + "/style.qml\n")
+        output.write("ogr2ogr " + working_dir + "/sektor.shp " + working_dir + "/sektor.geojson\n")
+        output.write("bash export_vectors.sh " + data_dir + " " + str(extended_geom.bounds[0]) + " " + str(extended_geom.bounds[1]) + " " + str(extended_geom.bounds[2]) + " " + str(extended_geom.bounds[3]) + " " + working_dir + " " + lines_name + "\n")
+        extend_limit = 5
+        if full_extend:
+            extend_limit = 100
+            if sector['properties']['typ'] in ["LPSTROM", "LPKROV"]:
+                extend_limit = 50
+        output.write("bash split.sh " + str(sector['properties']['id']) + " " + working_dir + " " + str(extend_limit) + " " + sector['properties']['typ'] + " " + output_name + "\n")
+        # output.write("python3 split.py " + str(sector['properties']['id'] + " " + sector['properties']['typ']) + "\n")
+    subprocess.check_call("bash " + working_dir + "/process.sh", shell=True)
+    print("DONE " + str(sector['properties']['id']))
+
+
+working_dir = sys.argv[1]
+data_dir = sys.argv[2]
+round = int(sys.argv[3])
 shapes_dir = data_dir + '/vektor/ZABAGED/line_x/'
 
 with open(working_dir + "/toprocess.txt") as tsp:
     toprocess = tsp.readlines()
 
-sektory = fiona.open(shapes_dir + 'merged_polygons_groupped.shp', 'r', encoding='utf-8')
+if round == 0:
+    sektory = fiona.open(shapes_dir + 'merged_polygons_groupped.shp', 'r', encoding='utf-8')
+else:
+    sektory = fiona.open(working_dir + '/outputs/round' + str(round - 1) + '.shp', 'r', encoding='utf-8')
+
+rounds = [
+    {
+        "lines_name": "lines_for_split_no_lespru_eleved.shp",
+        "full_extend": False
+    },
+    {
+        "lines_name": "lines_for_split_no_lespru_eleved.shp",
+        "full_extend": True
+    },
+    {
+        "lines_name": "lines_for_split_full.shp",
+        "full_extend": False
+    },
+    {
+        "lines_name": "lines_for_split_full.shp",
+        "full_extend": True
+    }
+]
+
 count_all = 0
 count_big = 0
 for sector in sektory:
     geom = shape(sector['geometry'])
-    # Bigger than 20 ha (1 ha = 10_000 square meters)
-    # if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV' and sector['properties']['id'] + "\n" in toprocess:
-    if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV':
-        # print(sector)
-        count_big += 1
-        # print(geom.bounds[0])
-        # print(mapping(geom.envelope))
-        extended_geom = geom.buffer(50)
-        save_feature(working_dir + "/cregion.geojson", mapping(extended_geom.envelope))
-        save_feature(working_dir + "/sektor.geojson", mapping(geom))
-        with open("process.sh", "w") as output:
-            output.write("cp sector.qml " + working_dir + "/style.qml\n")
-            output.write("ogr2ogr " + working_dir + "/sektor.shp " + working_dir + "/sektor.geojson\n")
-            output.write("bash export_vectors_zpm.sh " + data_dir + " " + str(extended_geom.bounds[0]) + " " + str(extended_geom.bounds[1]) + " " + str(extended_geom.bounds[2]) + " " + str(extended_geom.bounds[3]) + " " + working_dir + "\n")
-            output.write("bash export_vectors_osm.sh " + str(extended_geom.bounds[0]) + " " + str(extended_geom.bounds[1]) + " " + str(extended_geom.bounds[2]) + " " + str(extended_geom.bounds[3]) + " " + working_dir + "\n")
-            extend_limit = 100
-            if sector['properties']['typ'] in ["LPSTROM", "LPKROV"]:
-                extend_limit = 50
-            output.write("bash split.sh " + str(sector['properties']['id']) + " " + working_dir + " " + str(extend_limit) + "\n")
-            # output.write("python3 split.py " + str(sector['properties']['id'] + " " + sector['properties']['typ']) + "\n")
-        subprocess.check_call("bash /home/jencek/Documents/Projekty/PCR/github/Patrac/src/main/python/split/process.sh", shell=True)
-        print("DONE " + str(sector['properties']['id']))
+    lines_name = "lines_for_split_no_lespru_eleved.shp"
+    if round == 0:
+        # Bigger than 20 ha (1 ha = 10_000 square meters)
+        if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV' and sector['properties']['id'] + "\n" in toprocess:
+            # if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV':
+            count_big += 1
+            process_sector(geom, sector, rounds[round]["full_extend"], rounds[round]["lines_name"], "round" + str(round) + ".shp")
+    else:
+        if geom.area > 200000:
+            count_big += 1
+            process_sector(geom, sector, rounds[round]["full_extend"], rounds[round]["lines_name"], "round" + str(round) + ".shp")
     count_all += 1
 
 print("Total: " + str(count_all) + " Big: " + str(count_big))

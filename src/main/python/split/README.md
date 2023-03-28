@@ -1,61 +1,45 @@
+#
+
+## Suspicious
+AH58
+
 # New apprcoah from 2023-03-02
 
 Do not split plygons. But do same as for building them but with lines extended by 50 m.
 
 ```bash
-qgis_process run native:polygonstolines --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=sektor.shp --OUTPUT=sector_line.shp
-mkdir s
-mv sektor.* s/
-rm *.prj
-ogrmerge.py -single -o merged.shp *.shp
-qgis_process run native:extendlines --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=merged.shp --START_DISTANCE=50 --END_DISTANCE=50 --OUTPUT=extended.shp
-qgis_process run native:polygonize --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=extended.shp --KEEP_FIELDS=false --OUTPUT=polygons.shp
-qgis_process run native:clip --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=polygons.shp --OVERLAY=s/sektor.shp --OUTPUT=clipped.shp
-qgis_process run grass7:v.clean --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --input=clipped.shp --type=0 --type=1 --type=2 --type=3 --type=4 --type=5 --type=6 --tool=10 --threshold=40000 ---b=false ---c=false --output=clipped_cleaned.shp --error=TEMPORARY_OUTPUT --GRASS_SNAP_TOLERANCE_PARAMETER=-1 --GRASS_MIN_AREA_PARAMETER=0.0001 --GRASS_OUTPUT_TYPE_PARAMETER=0 --GRASS_VECTOR_DSCO= --GRASS_VECTOR_LCO= --GRASS_VECTOR_EXPORT_NOCAT=false
+date
+WD=/home/jencek/Documents/Projekty/PCR/github/Patrac/data/to_split_10
+DD=/data/patracdata/kraje/zl
+rm $WD/outputs/*
+python3 process.py $WD $DD 0
+python3 process.py $WD $DD 1
+python3 process.py $WD $DD 2
+python3 process.py $WD $DD 3
+date
 ```
 
 ## maybe enhancement
-AH19, BM1, CJ46, DE51, DF174, DN70, EO152, FN127 - close distance
-AK3, CE92, CL31 - priority - more rounds
-BI137
-CO108
-DE132, EM123 - rotation
+HS182, JT93 - half island
+AH19, BM1, CJ46, DE51, DF174, DN70, EO152, FN127, BI137, EN151 - close distance
+AK3, CE92, CL31, GB58 - priority - more rounds
+- No pruseky, no elved for first round
+DE132, EM123, BI6, BI69, EM123 - rotation or close distance clean - 20 m
+
+## Suspicious
+BH3, BI69, CM13, DF84, DG214, DK127, DK51, DL5, DM110, EN151, EN209, EN86, EQ128, EQ183, EQ210, FA1, FK107, FL1, GG21, GG189, GS50, DM110, JD78 - Missing data
+CK119, DB6, ER7, FI30, HB237, DD46, DN70 - not existing in ZPM
+
+## No problems
+BH3, CM13, DD46, DF84, DG214, DK127, DK51, DL5, DN110, EN151, EN209, EQ128, EQ183, EQ210, FA1, FL1, FK107, FI30, FL1, GG21, GS50, DM110, JD78 - Missing data
+CK119, DN70, ER7, FI30, DD46, DN70 - not existing in ZPM
 
 ## Problems
-BG122
-BH3
-BI6
-BI69
-CK119 - not existing in ZPM
-CM13
-DB6
-DF84
-DG214
-DK127
-DK51
-DL5
-DM110
-EH144 - no geometry
-EN151
-EN209
-EN86
-EQ128
-EQ183
-EQ210
-ER7 - divné
-FA1
-FI30
-FK107
-FL1
-FL36
-
-CM53
-DD46
-DM110 - a co ten průsek?
-DN70
-EH144 - divné
-EM123 - možná loehce zarotovat - ale jak to bude pátrač vědět - nebude - u Pole by to mohlo být
-JD78
+HB237 - fixed by two rounds
+EN86 - fixed by snap on 1 m - but produces some errors in other situations, so maybe run at the end
+DB6 - now is OK
+EH144, EH144 - no geometry - Topology exception - should be fixed by fixing geometries
+FL36 - very special case
 
 
 # Deprecated
