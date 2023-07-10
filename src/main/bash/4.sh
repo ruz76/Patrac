@@ -2,31 +2,6 @@
 
 . config/config.cfg
 
-if [ "$#" -ne 2 ]; then
-    echo "Illegal number of parameters"
-    echo "Inputs "
-    echo " - region code (varchar 2 letters) example vy"
-    echo " - region code (varchar 2 letters and 5 numbers) example nu33107"
-    echo "example bash 4.sh ka nu33051"
-    echo "example bash 4.sh pl nu33042"
-    echo "
-          kh nu33085
-          pa nu33093
-          us nu33069
-          lb nu33077
-          pl nu33042
-          ka nu33051
-          st nu33026
-          jc nu33034
-          praha nu33018 - asi pokryto st
-          ms nu33140
-          ol nu33123
-          zl nu33131
-          vy nu33107
-          jm nu33115"
-    exit 1
-fi
-
 KRAJ=`cat KRAJ.id`
 KRAJ_ID=`cat KRAJ_ID.id`
 CORES=8
@@ -147,7 +122,21 @@ cd ../line
 # TODO check or move merged.shp and barriers out from here
 for i in $( ls *.shp ); do FILE=`echo $i | cut -d"." -f1`; echo $FILE; NAME=`echo $i | cut -d'_' -f3 `; echo $NAME; v.in.ogr type=line input=`pwd` layer=$FILE output=$NAME --o -o;  done
 
-val=200; for i in $( cat list.txt ); do echo $i; echo $val; v.to.rast input=$i output=$i use=val value=$val --o; val=$((val+1));  done
+val=200; for i in $( cat list.txt ); do
+  echo $i;
+  echo $val;
+  V1=VODOPA
+  V2=VODTOK
+  DX=""
+  if [ "$i" = "$V1" ]; then
+    DX="-d"
+  fi
+  if [ "$i" = "$V2" ]; then
+      DX="-d"
+  fi
+  v.to.rast $DX input=$i output=$i use=val value=$val --o;
+  val=$((val+1));
+done
 
 r.mapcalc expression='landuse_combined=landuse' --o
 
@@ -180,11 +169,11 @@ psql "$CON_STRING" -f 1.sql
 ogr2ogr -overwrite -f "PostgreSQL" -s_srs "EPSG:5514" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" merged_polygons_groupped.shp -nln $KRAJ.merged_polygons_grouped -lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI
 
 echo "UPDATE $KRAJ.merged_polygons_grouped SET id = ogc_fid;" > 1.sql
+#echo "ALTER TABLE $KRAJ.merged_polygons_grouped rename column wkb_geometry to geom;" > 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column newid varchar(6);" >> 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column areanewid varchar(6);" >> 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column cen geometry(POINT,5514);" >> 1.sql
-echo "ALTER TABLE $KRAJ.merged_polygons_grouped add column cen geometry(POINT,5514);" >> 1.sql
-echo "UPDATE TABLE $KRAJ.merged_polygons_grouped SET cen = ST_Centroid(geom);" >> 1.sql
+echo "UPDATE $KRAJ.merged_polygons_grouped SET cen = ST_Centroid(geom);" >> 1.sql
 echo "CREATE INDEX ON $KRAJ.merged_polygons_grouped USING GIST(cen);" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
@@ -194,34 +183,3 @@ echo "DROP VIEW IF EXISTS $KRAJ.merged_polygons_groupped;" > 1.sql
 echo "CREATE VIEW $KRAJ.merged_polygons_groupped AS SELECT geom, newid id, typ FROM $KRAJ.merged_polygons_grouped;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 ogr2ogr -f "ESRI Shapefile" -a_srs "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=greenwich +units=m +no_defs +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56" merged_polygons_groupped.shp PG:"$CON_STRING_OGR" "$KRAJ.merged_polygons_groupped" -overwrite
-
-echo "COPY (SELECT id, ST_XMin(geom) - 10, ST_YMin(geom) - 10, ST_XMax(geom) + 10, ST_YMax(geom) + 10 FROM $KRAJ.merged_polygons_groupped ORDER BY id) TO '/tmp/merged_polygons_groupped.ids' DELIMITER ';' CSV;" > 1.sql
-psql "$CON_STRING" -f 1.sql
-
-cp $BIN_DIR/config/template/vektor/ZABAGED/line_x/* ./
-r.reclass input='landuse' output='landuse_type' rules='landuse_type_zbg.rules' --o
-
-# Insert stats into sqlite
-rm -r /tmp/stats/
-mkdir /tmp/stats
-cd /tmp/stats
-cp $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/merged_polygons_groupped.* ./
-python3 $BIN_DIR/insert_stats.py create
-
-while read p; do
-  SECTOR_ID=`echo $p | cut -d";" -f1`
-  MINX=`echo $p | cut -d";" -f2`
-  MINY=`echo $p | cut -d";" -f3`
-  MAXX=`echo $p | cut -d";" -f4`
-  MAXY=`echo $p | cut -d";" -f5`
-  g.region w=$MINX s=$MINY e=$MAXX n=$MAXY
-  ogr2ogr -where "id='$SECTOR_ID'" sector.shp merged_polygons_groupped.shp -overwrite
-  v.in.ogr -o input=sector.shp output=sector --o --quiet
-  r.mask vector=sector --o --quiet
-  r.stats -plna landuse_type separator=pipe > sector.stats
-  python3 $BIN_DIR/insert_stats.py insert $SECTOR_ID
-done </tmp/merged_polygons_groupped.ids
-
-r.mask -r
-
-mv /tmp/stats/stats.db $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/

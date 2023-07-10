@@ -43,3 +43,13 @@ cd $BIN_DIR
 echo $KRAJ > KRAJ.id
 echo $KRAJ_ID > KRAJ_ID.id
 su patrac -c 'bash 4.sh'
+
+cd $BIN_DIR/split
+echo $KRAJ > KRAJ.id
+echo $KRAJ_ID > KRAJ_ID.id
+su patrac -c 'bash prepare.sh'
+bash runTasks.sh
+bash postprocessing.sh
+
+cd $BIN_DIR
+su patrac -c 'bash 5.sh'

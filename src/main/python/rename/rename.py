@@ -80,9 +80,10 @@ def process_test(features):
         print("TEST OK")
 
 def process_sektory(grid):
-    # Deprecated
     features = []
-    sektory = fiona.open("/data/patracdata/cr/sektory_orig_NOINTRAV.shp")
+    s1_path = "/data/patracdata/cr/sektory_orig_NOINTRAV.shp"
+    s1_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_NOINTRAV.shp"
+    sektory = fiona.open(s1_path)
     for feature in sektory:
         # sid = feature['properties']['sid']
         centroid = shape(feature['geometry']).centroid
@@ -95,7 +96,9 @@ def process_sektory(grid):
             print("ERROR: Exceeded 1000 limit for sector " + grid[grid_cell_id]["letter"])
         grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
 
-    sektory2 = fiona.open("/data/patracdata/cr/sektory_orig_INTRAV.shp")
+    s2_path = "/data/patracdata/cr/sektory_orig_INTRAV.shp"
+    s2_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_INTRAV.shp"
+    sektory2 = fiona.open(s2_path)
     for feature in sektory2:
         centroid = shape(feature['geometry']).centroid
         grid_cell_id = get_grid_cell_id(centroid)

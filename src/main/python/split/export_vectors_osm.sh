@@ -1,7 +1,10 @@
+. ../config/config.cfg
+
 # Import OSM
 # osm2pgsql -C 5000 -d patrac -U patrac -H localhost -W ~/Downloads/czech-republic-latest.osm.pbf
+osm2pgsql -C 5000 -d gdb -U postgres -H localhost $OSM_DIR/czech-republic-latest.osm.pbf
 
-CON_STRING="dbname='patrac' port='5432' user='patrac' password='patrac' host='localhost'"
+#CON_STRING="dbname='patrac' port='5432' user='patrac' password='patrac' host='localhost'"
 
 XMIN=$1
 YMIN=$2

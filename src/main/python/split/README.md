@@ -5,6 +5,16 @@ AH58
 
 # New apprcoah from 2023-03-02
 
+## prepare
+
+cd patracdata/osm
+wget https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
+cd split
+echo ka > KRAJ.id
+echo nu33051 > KRAJ_ID.id
+su patrac -c 'bash prepare.sh'
+bash runTasks.sh
+
 Do not split plygons. But do same as for building them but with lines extended by 50 m.
 
 ```bash
