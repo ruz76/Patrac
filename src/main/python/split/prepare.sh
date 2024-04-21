@@ -44,18 +44,21 @@ mv eleved.* excluded/
 ogrmerge.py -field_strategy FirstLayer -single -o lines_for_split_no_lespru_eleved.shp *.shp
 mv lines_for_split_no_lespru_eleved.* $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/
 
-mkdir -p $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/1/outputs
-mkdir -p $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/2/outputs
-mkdir -p $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/3/outputs
-mkdir -p $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/4/outputs
+for i in {1..8}; do
+  mkdir -p $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/$i/outputs
+done
 
 echo "COPY (SELECT id FROM $KRAJ.merged_polygons_groupped WHERE ST_Area(geom) > 20000) TO '/tmp/allsectorsids.txt' CSV;" > 1.sql
 psql "$CON_STRING" -f 1.sql
-split -n 4 /tmp/allsectorsids.txt
+split -n 8 /tmp/allsectorsids.txt
 
 cp xaa $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/1/toprocess.txt
 cp xab $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/2/toprocess.txt
 cp xac $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/3/toprocess.txt
 cp xad $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/4/toprocess.txt
+cp xae $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/5/toprocess.txt
+cp xaf $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/6/toprocess.txt
+cp xag $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/7/toprocess.txt
+cp xah $KRAJE_DIR/$KRAJ/vektor/ZABAGED/line_x/split/8/toprocess.txt
 
 QT_QPA_PLATFORM=offscreen qgis_process plugins enable grassprovider

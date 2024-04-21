@@ -50,6 +50,10 @@ ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" merge
 echo "UPDATE $KRAJ.merged_polygons SET geom = ST_MakeValid(geom) WHERE NOT ST_IsValid(geom);" > 1.sql
 psql "$CON_STRING" -f 1.sql
 
+echo "CREATE INDEX ON $KRAJ.merged_polygons USING GIST(geom);" > 1.sql
+echo "CREATE INDEX ON $KRAJ.landuse_barriers2_polygons USING GIST(geom);" >> 1.sql
+psql "$CON_STRING" -f 1.sql
+
 cd ../line/
 ogr2ogr -overwrite -f "PostgreSQL" -t_srs "EPSG:5514" PG:"$CON_STRING_OGR" landuse_barriers.shp -nln $KRAJ.landuse_barriers -lco GEOMETRY_NAME=geom
 #rm landuse_barriers.*
@@ -62,7 +66,7 @@ bash merge.sh $KRAJ
 
 echo "ALTER TABLE $KRAJ.landuse_barriers2_polygons RENAME TO barriers_poly;" > 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons RENAME COLUMN fid TO id;" >> 1.sql
-echo "ALTER TABLE $KRAJ.barriers_poly RENAME COLUMN fid TO id;" >> 1.sql
+echo "ALTER TABLE $KRAJ.barriers_poly ADD COLUMN id SERIAL;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
 
 cd ../sektory/
@@ -71,7 +75,11 @@ mkdir data/input/
 bash getInputs.sh $KRAJ
 mkdir data/barriers/
 bash getInputBarriers.sh $KRAJ
-bash split_big.sh $KRAJ
+# TEMPORARY
+# bash split_big.sh $KRAJ
+cp /tmp/barriers_poly_$KRAJ.count /tmp/barriers_poly_$KRAJ.count.extended
+# END TEMPORARY
 bash tasks.sh $KRAJ
 bash runTasks.sh
 bash merger_prepare.sh $KRAJ
+

@@ -10,13 +10,14 @@ CORES=8
 #Get list of dems
 #need to be executed outside of grass - some problem
 
-rm /tmp/dem.xyz
+mkdir /data/patracdata/tmp/
+rm /data/patracdata/tmp/dem.xyz
 bash get_dems.sh $2
 
 for i in $( cat /tmp/list.all ); do
   echo $i;
-  gzip -d $i
-  cat $i >> /tmp/dem.xyz;
+  gzip -d $i.gz
+  cat $i >> /data/patracdata/tmp/dem.xyz;
   gzip $i
 done
 
@@ -148,8 +149,8 @@ r.reclass input=landuse_combined output=friction rules=friction.rules --o
 
 g.region rast=landuse
 
-r.in.xyz input=/tmp/dem.xyz output=dem z=3 separator=space skip=1 --o
-rm /tmp/dem.xyz
+r.in.xyz input=/data/patracdata/tmp/dem.xyz output=dem z=3 separator=space skip=1 --o
+rm /data/patracdata/tmp/dem.xyz
 r.slope.aspect elevation=dem slope=slope --o
 r.null map=slope null=0
 r.mapcalc expression='friction_slope=friction+if(slope > 45, 200000, friction + slope)' --o

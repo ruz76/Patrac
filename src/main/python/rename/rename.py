@@ -48,7 +48,7 @@ def get_grid():
     for row in range(98):
         for col in range(25):
             cur_letter_pos = col - shift
-            grid[letters[col] + str(row)] = {"letter": letters[cur_letter_pos], "number": 0}
+            grid[letters[col] + str(row)] = {"letter": letters[cur_letter_pos], "number": 0, "number_intrav": 0}
         if shift < 20:
             shift += 4
         else:
@@ -71,8 +71,8 @@ def process_test(features):
         centroid = shape(feature['geometry']).centroid
         # point = Point(x, y)
         if abs(centroid.x - x) < 7500 and abs(centroid.y - y) < 7500:
-            all_features.append(feature['properties']['newid'])
-            unique_features.add(feature['properties']['newid'])
+            all_features.append(feature['properties']['label'])
+            unique_features.add(feature['properties']['label'])
     if len(all_features) != len(unique_features):
         print("ERROR: " + str(len(all_features)) + " " + str(len(unique_features)))
         print(str(x) + " " + str(y))
@@ -81,80 +81,118 @@ def process_test(features):
 
 def process_sektory(grid):
     features = []
-    s1_path = "/data/patracdata/cr/sektory_orig_NOINTRAV.shp"
-    s1_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_NOINTRAV.shp"
+    s1_path = "/tmp/sektory_2020_pom.shp"
     sektory = fiona.open(s1_path)
     for feature in sektory:
+        # print(str(feature))
+        # print(dir(feature["properties"]))
+        # print(str(feature["properties"]["id"]))
         # sid = feature['properties']['sid']
         centroid = shape(feature['geometry']).centroid
         grid_cell_id = get_grid_cell_id(centroid)
-        # print(grid_cell_id)
-        # sektory_named.append([sid, grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])])
-        feature["properties"]["newid"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
+        if feature["properties"]["type"] != 'INTRAV':
+            feature["properties"]["label"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
+            if grid[grid_cell_id]["number"] > 999:
+                print("ERROR: Exceeded 1000 limit for sector " + grid[grid_cell_id]["letter"] + " " + str(grid[grid_cell_id]["number"]))
+            grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
+        else:
+            feature["properties"]["label"] = 'I_' + grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number_intrav"])
+            if grid[grid_cell_id]["number_intrav"] > 999:
+                print("ERROR: Exceeded 1000 limit for INTRAV sector " + grid[grid_cell_id]["letter"] + " " + str(grid[grid_cell_id]["number_intrav"]))
+            grid[grid_cell_id]["number_intrav"] = grid[grid_cell_id]["number_intrav"] + 1
         features.append(feature)
-        if grid[grid_cell_id]["number"] > 999:
-            print("ERROR: Exceeded 1000 limit for sector " + grid[grid_cell_id]["letter"])
-        grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
-
-    s2_path = "/data/patracdata/cr/sektory_orig_INTRAV.shp"
-    s2_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_INTRAV.shp"
-    sektory2 = fiona.open(s2_path)
-    for feature in sektory2:
-        centroid = shape(feature['geometry']).centroid
-        grid_cell_id = get_grid_cell_id(centroid)
-        feature["properties"]["newid"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
-        features.append(feature)
-        if grid[grid_cell_id]["number"] > 999:
-            print("ERROR: Exceeded 1000 limit in INTRAV for sector " + grid[grid_cell_id]["letter"])
-        grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
+        # print(str(feature["properties"]["id"]))
+        # print(str(feature["properties"]["label"]))
+        # print(str(feature["properties"].get("id")))
+        # print(str(feature["properties"].get("label")))
 
     for i in range(20):
         try:
             process_test(features)
         except Exception as e:
             print(e)
-    # with open("renamed.csv", "w") as out:
-    #     for sektor in sektory_named:
-    #         out.write(str(sektor[0]) + ";" + sektor[1] + "\n")
-    with open("renamed.geojson", "w") as out:
-        data = {
-            "type": "FeatureCollection",
-            "features":features
-        }
-        json.dump(data, out)
 
-def sektory_process():
-    # Deprecated
-    sektory_points = []
-    sektory_named = []
-    sektory = fiona.open("/data/patracdata/cr/sektory_orig.shp")
-    for feature in sektory:
-        sid = feature['properties']['sid']
-        centroid = shape(feature['geometry']).centroid
-        sektory_points.append([sid, centroid])
+    with open("sectors_pom_9_renamed.csv", "w") as out:
+        for feature in features:
+            out.write(str(feature["properties"]["id"]) + ';' + feature["properties"]["label"] + "\n")
 
-    letters = string.ascii_uppercase
-    current_letter_pos = 0
-    current_number = 0
-    while len(sektory_points) > 1:
-        closest_position = get_closest(sektory_points[0], sektory_points)
-        sektory_named.append([sektory_points[closest_position][0], letters[current_letter_pos] + str(current_number)])
-        if current_letter_pos == 25:
-            current_letter_pos = 0
-            if current_number == 999:
-                current_number = 0
-            else:
-                current_number += 1
-        else:
-            current_letter_pos += 1
-        del sektory_points[closest_position]
-        if len(sektory_points) % 200 == 0:
-            print(len(sektory_points))
+# def process_sektory(grid):
+#     # deprecated
+#     features = []
+#     s1_path = "/data/patracdata/cr/sektory_orig_NOINTRAV.shp"
+#     s1_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_NOINTRAV.shp"
+#     sektory = fiona.open(s1_path)
+#     for feature in sektory:
+#         # sid = feature['properties']['sid']
+#         centroid = shape(feature['geometry']).centroid
+#         grid_cell_id = get_grid_cell_id(centroid)
+#         # print(grid_cell_id)
+#         # sektory_named.append([sid, grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])])
+#         feature["properties"]["newid"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
+#         features.append(feature)
+#         if grid[grid_cell_id]["number"] > 999:
+#             print("ERROR: Exceeded 1000 limit for sector " + grid[grid_cell_id]["letter"])
+#         grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
+#
+#     s2_path = "/data/patracdata/cr/sektory_orig_INTRAV.shp"
+#     s2_path = "/data/patracdata/kraje/zl/vektor/ZABAGED/line_x/merged_polygons_groupped_fixed_INTRAV.shp"
+#     sektory2 = fiona.open(s2_path)
+#     for feature in sektory2:
+#         centroid = shape(feature['geometry']).centroid
+#         grid_cell_id = get_grid_cell_id(centroid)
+#         feature["properties"]["newid"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
+#         features.append(feature)
+#         if grid[grid_cell_id]["number"] > 999:
+#             print("ERROR: Exceeded 1000 limit in INTRAV for sector " + grid[grid_cell_id]["letter"])
+#         grid[grid_cell_id]["number"] = grid[grid_cell_id]["number"] + 1
+#
+#     for i in range(20):
+#         try:
+#             process_test(features)
+#         except Exception as e:
+#             print(e)
+#     # with open("renamed.csv", "w") as out:
+#     #     for sektor in sektory_named:
+#     #         out.write(str(sektor[0]) + ";" + sektor[1] + "\n")
+#     with open("renamed.geojson", "w") as out:
+#         data = {
+#             "type": "FeatureCollection",
+#             "features":features
+#         }
+#         json.dump(data, out)
 
-    sektory_named.append([sektory_points[0][0], letters[current_letter_pos] + str(current_number)])
-    with open("renamed_all.csv", "w") as out:
-        for sektor in sektory_named:
-            out.write(str(sektor[0]) + ";" + sektor[1] + "\n")
+# def sektory_process():
+#     # Deprecated
+#     sektory_points = []
+#     sektory_named = []
+#     sektory = fiona.open("/data/patracdata/cr/sektory_orig.shp")
+#     for feature in sektory:
+#         sid = feature['properties']['sid']
+#         centroid = shape(feature['geometry']).centroid
+#         sektory_points.append([sid, centroid])
+#
+#     letters = string.ascii_uppercase
+#     current_letter_pos = 0
+#     current_number = 0
+#     while len(sektory_points) > 1:
+#         closest_position = get_closest(sektory_points[0], sektory_points)
+#         sektory_named.append([sektory_points[closest_position][0], letters[current_letter_pos] + str(current_number)])
+#         if current_letter_pos == 25:
+#             current_letter_pos = 0
+#             if current_number == 999:
+#                 current_number = 0
+#             else:
+#                 current_number += 1
+#         else:
+#             current_letter_pos += 1
+#         del sektory_points[closest_position]
+#         if len(sektory_points) % 200 == 0:
+#             print(len(sektory_points))
+#
+#     sektory_named.append([sektory_points[0][0], letters[current_letter_pos] + str(current_number)])
+#     with open("renamed_all.csv", "w") as out:
+#         for sektor in sektory_named:
+#             out.write(str(sektor[0]) + ";" + sektor[1] + "\n")
 
 grid = get_grid()
 # print(grid)

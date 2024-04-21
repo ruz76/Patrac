@@ -25,7 +25,9 @@ cd $DUMP_DIR
 #done
 
 # Version from 2023
-psql "$CON_STRING" -f zbgd_202305170824.sql
+psql "$CON_STRING" < zbgd_202305170824.sql
+rm zbgd_202305170824.sql
+
 for i in $( cat list.txt ); do
   NAME=`echo $i`;
   echo $NAME;
@@ -43,4 +45,8 @@ done
 cd $ADM_DIR
 pg_restore -c -t nu3 -d gdb nu3.dump
 pg_restore -c -t dmr4g_index -d gdb dmr4g_index.dump
+
+# Inserting testing area
+echo "INSERT INTO public.nu3 (id, nu3, pcrid, geom) VALUES (15, 'nu30001', 'tt', ST_SetSRID(ST_GeomFromText('MultiPolygon (((-868611.03720572 -1001141.56940122, -868611.03720572 -1000024.58360494, -867369.94187653 -1000024.58360494, -867369.94187653 -1001141.56940122, -868611.03720572 -1001141.56940122)))'), 5514));" > 1.sql
+psql "$CON_STRING" -f 1.sql
 

@@ -76,7 +76,11 @@ echo "ALTER TABLE $KRAJ.merged_polygons_grouped DROP COLUMN id;" >> 1.sql
 echo "ALTER TABLE $KRAJ.merged_polygons_grouped ADD COLUMN id SERIAL;" >> 1.sql
 echo "CREATE VIEW $KRAJ.merged_polygons_groupped AS SELECT geom, id, typ FROM $KRAJ.merged_polygons_grouped;" >> 1.sql
 psql "$CON_STRING" -f 1.sql
-ogr2ogr -f "ESRI Shapefile" -a_srs "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=greenwich +units=m +no_defs +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56" merged_polygons_groupped.shp PG:"$CON_STRING_OGR" "$KRAJ.merged_polygons_groupped" -overwrite
+
+# TEMPORARY
+# ogr2ogr -f "ESRI Shapefile" -a_srs "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=greenwich +units=m +no_defs +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56" merged_polygons_groupped.shp PG:"$CON_STRING_OGR" "$KRAJ.merged_polygons_groupped" -overwrite
+ogr2ogr -f "ESRI Shapefile" -a_srs "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +pm=greenwich +units=m +no_defs +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56" merged_polygons_groupped_doplnek.shp PG:"$CON_STRING_OGR" "$KRAJ.merged_polygons_groupped" -overwrite
+# END TEMPORARY
 
 #echo "DROP VIEW IF EXISTS $KRAJ.merged_polygons_groupped;" > 1.sql
 #echo "CREATE VIEW $KRAJ.merged_polygons_groupped AS SELECT geom, id, typ FROM $KRAJ.merged_polygons_grouped_full;" >> 1.sql

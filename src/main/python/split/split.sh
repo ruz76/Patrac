@@ -1,4 +1,5 @@
 cd $2
+QT_QPA_PLATFORM=offscreen qgis_process plugins enable grassprovider
 QT_QPA_PLATFORM=offscreen qgis_process run native:polygonstolines --distance_units=meters --area_units=m2 --ellipsoid=EPSG:7030 --INPUT=sektor.shp --OUTPUT=sector_line.shp
 mkdir s
 mv sektor.* s/
@@ -17,6 +18,8 @@ ogr2ogr -s_srs EPSG:5514 -t_srs EPSG:4326 $1.geojson $FINAL.shp
 SIZE=`wc -c $1.geojson | awk '{print $1}'`
 if [ $SIZE -gt 200 ]; then
   ogr2ogr -append outputs/$5 $FINAL.shp -sql "SELECT '$1' AS id, '$4' AS typ FROM $FINAL"
+else
+  ogr2ogr -append outputs/$5 s/sektor.shp -sql "SELECT '$1' AS id, '$4' AS typ FROM sektor"
 fi
 rm *.shp
 rm *.shx

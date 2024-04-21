@@ -18,7 +18,6 @@ def process_sector(geom, sector, full_extend, lines_name, output_name):
     save_feature(working_dir + "/cregion.geojson", mapping(extended_geom.envelope))
     save_feature(working_dir + "/sektor.geojson", mapping(geom))
     with open(working_dir + "/process.sh", "w") as output:
-        output.write("cp sector.qml " + working_dir + "/style.qml\n")
         output.write("ogr2ogr " + working_dir + "/sektor.shp " + working_dir + "/sektor.geojson\n")
         output.write("bash export_vectors.sh " + data_dir + " " + str(extended_geom.bounds[0]) + " " + str(extended_geom.bounds[1]) + " " + str(extended_geom.bounds[2]) + " " + str(extended_geom.bounds[3]) + " " + working_dir + " " + lines_name + "\n")
         extend_limit = 5
@@ -27,7 +26,6 @@ def process_sector(geom, sector, full_extend, lines_name, output_name):
             if sector['properties']['typ'] in ["LPSTROM", "LPKROV"]:
                 extend_limit = 50
         output.write("bash split.sh " + str(sector['properties']['id']) + " " + working_dir + " " + str(extend_limit) + " " + sector['properties']['typ'] + " " + output_name + "\n")
-        # output.write("python3 split.py " + str(sector['properties']['id'] + " " + sector['properties']['typ']) + "\n")
     subprocess.check_call("bash " + working_dir + "/process.sh", shell=True)
     print("DONE " + str(sector['properties']['id']))
 
@@ -41,26 +39,14 @@ with open(working_dir + "/toprocess.txt") as tsp:
     toprocess = tsp.readlines()
 
 if round == 0:
-    sektory = fiona.open(shapes_dir + 'merged_polygons_groupped.shp', 'r', encoding='utf-8')
+    sektory = fiona.open(shapes_dir + 'sectors_final.shp', 'r', encoding='utf-8')
 else:
     sektory = fiona.open(working_dir + '/outputs/round' + str(round - 1) + '.shp', 'r', encoding='utf-8')
 
 rounds = [
     {
-        "lines_name": "lines_for_split_no_lespru_eleved.shp",
+        "lines_name": "lines_for_split_intrav.shp",
         "full_extend": False
-    },
-    {
-        "lines_name": "lines_for_split_no_lespru_eleved.shp",
-        "full_extend": True
-    },
-    {
-        "lines_name": "lines_for_split_full.shp",
-        "full_extend": False
-    },
-    {
-        "lines_name": "lines_for_split_full.shp",
-        "full_extend": True
     }
 ]
 
@@ -71,7 +57,8 @@ for sector in sektory:
     # lines_name = "lines_for_split_no_lespru_eleved.shp"
     if round == 0:
         # Bigger than 20 ha (1 ha = 10_000 square meters)
-        if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV' and sector['properties']['id'] + "\n" in toprocess:
+        # TODO Be careful this is new id as integer not the old one as string
+        if geom.area > 200000 and sector['properties']['typ'] == 'INTRAV' and str(sector['properties']['id']) + "\n" in toprocess:
             # if geom.area > 200000 and sector['properties']['typ'] != 'INTRAV':
             count_big += 1
             process_sector(geom, sector, rounds[round]["full_extend"], rounds[round]["lines_name"], "round" + str(round) + ".shp")

@@ -19,7 +19,7 @@ FROM $KRAJ.merged_polygons p, $KRAJ.barriers_poly b
 WHERE (ST_Within(p.geom, b.geom) 
 OR ST_Intersects(p.geom, b.geomBufNeg01)
 OR ST_Equals(p.geom, b.geom)) 
-AND b.id = "$i" AND p.type IN ('AREZAS',  'ARUCZA',  'HRBITO',  'OSPLSI',  'SADZAH',  'USNAOD',  'ZAHPAR');" >> view.sql
+  AND b.id = "$i" AND p.type IN ('AREZAS',  'ARUCZA', 'HRBITO', 'OSPLSI',  'SADZAH',  'USNAOD',  'ZAHPAR');" >> view.sql
 
     echo "INSERT INTO $KRAJ.intravilans SELECT ST_Multi((ST_Dump(ST_Buffer(ST_Buffer(ST_Union(geom), 0.01), -0.01))).geom) FROM $KRAJ.merged_polygons_in_area;" >> view.sql
 
