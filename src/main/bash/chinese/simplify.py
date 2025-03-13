@@ -151,7 +151,7 @@ def write_features_to_new_layer_2(features, input_file, source_layer, output_fil
                 for feature in features:
                     # geometry = feature["geometry"]
                     # geometry['coordinates'] = [list(coord) if isinstance(coord, tuple) else coord for coord in geometry['coordinates']]
-                    print(feature['geometry'])
+                    # print(feature['geometry'])
                     dst.write(feature)
             except Exception as e:
                 print(e)
@@ -160,8 +160,12 @@ def write_features_to_new_layer_2(features, input_file, source_layer, output_fil
 nodes_keep = {}
 nodes_remove = {}
 testing_gpkg = '/data/patracdata/tmp/chinese_testing/data.gpkg'
+# testing_gpkg = '/home/jencek/Documents/Projekty/Patrac/chinese_testing/data.gpkg'
+way_to_test = [3733084, 715353]
+way_to_test = [292130, 292129]
+way_to_test = [351010, 56565]
 
-with fiona.open(testing_gpkg, layer='ways') as layer:
+with fiona.open(testing_gpkg, layer='ways_selected') as layer:
     nodes = {}
     # Gets all nodes and associate the segments to it
     for feature in layer:
@@ -184,19 +188,30 @@ with fiona.open(testing_gpkg, layer='ways') as layer:
         # lines.append(line)
 
     # Splits into two lists, nodes_keep should be nodes that have one or more than two segments associated
+    ways_count = 0
     for key in nodes:
         if len(nodes[key]['segments']) != 2:
             nodes_keep[key] = nodes[key]
         else:
             nodes_remove[key] = nodes[key]
+        ways_count += len(nodes[key]['segments'])
 
+    print(ways_count)
     print(len(nodes_keep))
     print(len(nodes_remove))
+
+    for key in nodes_keep:
+        if key in way_to_test:
+            print("IT IS IN NODES KEEP")
+            print(nodes_keep[key])
 
     # Loop the list to remove nodes
     while len(nodes_remove) > 0:
         key = next(iter(nodes_remove))
-        print(key)
+        if key in way_to_test:
+            print("IT IS IN HERE NOW")
+            print(nodes_remove[key])
+        # print(key)
         node_1 = None
         node_2 = None
         segment_1 = nodes_remove[key]['segments'][0]
@@ -212,7 +227,6 @@ with fiona.open(testing_gpkg, layer='ways') as layer:
         else:
             node_2 = segment_2['properties']['target']
 
-        # TODO merge line geometry
         merged_feature['properties']['source'] = node_1
         merged_feature['properties']['target'] = node_2
         merged_feature['properties']['length_m'] = segment_1['properties']['length_m'] + segment_2['properties']['length_m']
@@ -221,8 +235,28 @@ with fiona.open(testing_gpkg, layer='ways') as layer:
         merged_feature["geometry"] = fiona.Geometry.from_dict(mapping(merged_geom))
         # print(merged_feature["geometry"])
 
+        log_me = True
+        # if node_1 in way_to_test or node_2 in way_to_test:
+        #     log_me = True
+
         if node_1 in nodes_keep:
-            fixed_segments = [segment for segment in nodes_keep[node_1]['segments'] if segment['properties']['source'] != node_1 and segment['properties']['target'] != node_1]
+            if log_me:
+                print("IT IS IN NODE_1 BEFORE FIX")
+                print("Node 1: " + str(node_1))
+                print(nodes_keep[node_1]['segments'])
+                for segment in nodes_keep[node_1]['segments']:
+                    print("Segment: " + str(segment['properties']['source']) + " " + str(segment['properties']['target']))
+
+            fixed_segments = []
+            for segment in nodes_keep[node_1]['segments']:
+                if segment['properties']['source'] == node_1 and segment['properties']['target'] != node_2:
+                    fixed_segments.append(segment)
+                if segment['properties']['source'] == node_2 and segment['properties']['target'] != node_1:
+                    fixed_segments.append(segment)
+            if log_me:
+                print("IT IS IN NODE_1 AFTER FIX")
+                print(fixed_segments)
+
             nodes_keep[node_1]['segments'] = fixed_segments
             nodes_keep[node_1]['segments'].append(merged_feature)
             if len(nodes_keep[node_1]['segments']) == 2:
@@ -230,8 +264,24 @@ with fiona.open(testing_gpkg, layer='ways') as layer:
                 # So we move it into node_removes and remove it from nodes_keep
                 nodes_remove[node_1] = nodes_keep[node_1]
                 del(nodes_keep[node_1])
-        else:
-            fixed_segments = [segment for segment in nodes_remove[node_1]['segments'] if segment['properties']['source'] != node_1 and segment['properties']['target'] != node_1]
+
+            print('NODE_1 FIX WITH MERGE')
+            print(nodes_keep[node_1]['segments'])
+
+        if node_1 in nodes_remove:
+            # fixed_segments = [segment for segment in nodes_remove[node_1]['segments'] if segment['properties']['source'] != node_1 and segment['properties']['target'] != node_1]
+            # nodes_remove[node_1]['segments'] = fixed_segments
+            fixed_segments = []
+            for segment in nodes_remove[node_1]['segments']:
+                if segment['properties']['source'] == node_1 and segment['properties']['target'] != node_2:
+                    fixed_segments.append(segment)
+                if segment['properties']['source'] == node_2 and segment['properties']['target'] != node_1:
+                    fixed_segments.append(segment)
+
+            if log_me:
+                print("IT IS IN NODE_1 REMOVE")
+                print(fixed_segments)
+
             nodes_remove[node_1]['segments'] = fixed_segments
             nodes_remove[node_1]['segments'].append(merged_feature)
             if len(nodes_remove[node_1]['segments']) != 2:
@@ -240,26 +290,68 @@ with fiona.open(testing_gpkg, layer='ways') as layer:
                 nodes_keep[node_1] = nodes_remove[node_1]
                 del(nodes_remove[node_1])
 
-        if node_2 in nodes_keep:
-            fixed_segments = [segment for segment in nodes_keep[node_2]['segments'] if segment['properties']['source'] != node_2 and segment['properties']['target'] != node_2]
-            nodes_keep[node_2]['segments'] = fixed_segments
-            nodes_keep[node_2]['segments'].append(merged_feature)
-            if len(nodes_keep[node_2]['segments']) == 2:
-                # If the updated node has two segments it has to be fixed
-                # So we move it into node_removes and remove it from nodes_keep
-                nodes_remove[node_2] = nodes_keep[node_2]
-                del(nodes_keep[node_2])
-        else:
-            fixed_segments = [segment for segment in nodes_remove[node_2]['segments'] if segment['properties']['source'] != node_2 and segment['properties']['target'] != node_2]
-            nodes_remove[node_2]['segments'] = fixed_segments
-            nodes_remove[node_2]['segments'].append(merged_feature)
-            if len(nodes_remove[node_2]['segments']) != 2:
-                # If the updated dones not have two segments it should not be fixed now
-                # So we move it into nodes_keep and remove it from nodes_remove
-                nodes_keep[node_2] = nodes_remove[node_2]
-                del(nodes_remove[node_2])
+        # if node_2 in nodes_keep:
+        #     # fixed_segments = [segment for segment in nodes_keep[node_2]['segments'] if segment['properties']['source'] != node_2 and segment['properties']['target'] != node_2]
+        #     # nodes_keep[node_2]['segments'] = fixed_segments
+        #     if node_2 in way_to_test:
+        #         print("IT IS IN NODE_2 BEFORE FIX")
+        #         print(nodes_keep[node_2]['segments'])
+        #         for segment in nodes_keep[node_2]['segments']:
+        #             print(node_2)
+        #             print(node_1)
+        #             print(str(segment['properties']['source']) + " " + str(segment['properties']['target']))
+        #
+        #     fixed_segments = []
+        #     for segment in nodes_keep[node_2]['segments']:
+        #         if segment['properties']['source'] == node_2 and segment['properties']['target'] != node_1:
+        #             fixed_segments.append(segment)
+        #         if segment['properties']['source'] == node_1 and segment['properties']['target'] != node_2:
+        #             fixed_segments.append(segment)
+        #
+        #     if log_me:
+        #         print("IT IS IN NODE_2")
+        #         print(fixed_segments)
+        #
+        #     if node_2 in way_to_test:
+        #         print("IT IS IN NODE_2")
+        #         print(fixed_segments)
+        #
+        #
+        #     nodes_keep[node_2]['segments'] = fixed_segments
+        #     nodes_keep[node_2]['segments'].append(merged_feature)
+        #     if len(nodes_keep[node_2]['segments']) == 2:
+        #         # If the updated node has two segments it has to be fixed
+        #         # So we move it into node_removes and remove it from nodes_keep
+        #         nodes_remove[node_2] = nodes_keep[node_2]
+        #         del(nodes_keep[node_2])
+        #
+        # if node_2 in nodes_remove:
+        #     # fixed_segments = [segment for segment in nodes_remove[node_2]['segments'] if segment['properties']['source'] != node_2 and segment['properties']['target'] != node_2]
+        #     fixed_segments = []
+        #     for segment in nodes_remove[node_2]['segments']:
+        #         if segment['properties']['source'] == node_2 and segment['properties']['target'] != node_1:
+        #             fixed_segments.append(segment)
+        #         if segment['properties']['source'] == node_1 and segment['properties']['target'] != node_2:
+        #             fixed_segments.append(segment)
+        #
+        #     if log_me:
+        #         print("IT IS IN NODE_2 REMOVE")
+        #         print(fixed_segments)
+        #
+        #     nodes_remove[node_2]['segments'] = fixed_segments
+        #     nodes_remove[node_2]['segments'].append(merged_feature)
+        #     if len(nodes_remove[node_2]['segments']) != 2:
+        #         # If the updated dones not have two segments it should not be fixed now
+        #         # So we move it into nodes_keep and remove it from nodes_remove
+        #         nodes_keep[node_2] = nodes_remove[node_2]
+        #         del(nodes_remove[node_2])
 
         del(nodes_remove[key])
+
+for key in nodes_keep:
+    if key in way_to_test:
+        print("IT IS IN NODES KEEP AFTER SIMPLIFY")
+        print(nodes_keep[key])
 
 print(len(nodes_keep))
 print(len(nodes_remove))
@@ -278,12 +370,15 @@ for key in nodes_keep:
         else:
             segments_to_export[segment_key] = [segment]
 
+
 segments_to_export_list = []
 print(len(segments_to_export))
 for key in segments_to_export:
+    if key.find(str(way_to_test[0])) > -1 or key.find(str(way_to_test[1])) > -1:
+        print(key)
     for segment in segments_to_export[key]:
         segments_to_export_list.append(segment)
-        print(segment['geometry'])
+        # print(segment['geometry'])
 
 print(len(segments_to_export_list))
 
@@ -293,4 +388,4 @@ print(len(segments_to_export_list))
 #         # print(feature['geometry'])
 #         ff.append(feature)
 
-write_features_to_new_layer_2(segments_to_export_list, testing_gpkg, 'ways', testing_gpkg, 'ways_simplified')
+write_features_to_new_layer_2(segments_to_export_list, testing_gpkg, 'ways_selected', testing_gpkg, 'ways_simplified')
