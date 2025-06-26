@@ -90,7 +90,7 @@ def process_sektory(grid):
         # sid = feature['properties']['sid']
         centroid = shape(feature['geometry']).centroid
         grid_cell_id = get_grid_cell_id(centroid)
-        if feature["properties"]["type"] != 'INTRAV':
+        if feature["properties"]["typ"] != 'INTRAV':
             feature["properties"]["label"] = grid[grid_cell_id]["letter"] + str(grid[grid_cell_id]["number"])
             if grid[grid_cell_id]["number"] > 999:
                 print("ERROR: Exceeded 1000 limit for sector " + grid[grid_cell_id]["letter"] + " " + str(grid[grid_cell_id]["number"]))
