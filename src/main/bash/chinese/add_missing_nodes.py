@@ -1,6 +1,7 @@
 import fiona
 from shapely.geometry import shape, Point, mapping, LineString
 import sys
+import datetime
 
 # tolerance v ° (cca 1m)
 TOLERANCE = 1.0 / 111320.0
@@ -20,7 +21,11 @@ with fiona.open(gpkg_path, layer="ways_nodes", mode="a") as nodes:
     with fiona.open(gpkg_path, layer="ways", mode="r") as ways:
         wpos = 0
         for way in ways:
-            print(wpos)
+
+            if wpos % 1000 == 0:
+                now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"{now} | wpos = {wpos}")
+
             geom = shape(way["geometry"])
             if not isinstance(geom, LineString):
                 continue
